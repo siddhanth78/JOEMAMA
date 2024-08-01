@@ -91,7 +91,7 @@ def show_cursor():
     sys.stdout.flush()
 
 def run_script_in_new_terminal(command):
-    tmppath = os.path.join(os.getcwd(), 'tmp/PIPEOUT.txt')
+    tmppath = os.path.join(os.getcwd(), 'PIPEOUT.txt')
     try:
         script = f'''
     tell application "Terminal"
