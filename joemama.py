@@ -5,6 +5,7 @@ import tty
 import subprocess
 import shutil
 from datetime import datetime
+import tempfile
 
 #TODO: error handling in tokenize_
 
@@ -90,13 +91,14 @@ def show_cursor():
     sys.stdout.flush()
 
 def run_script_in_new_terminal(command):
+    tmppath = os.path.join(os.getcwd(), 'tmp/PIPEOUT.txt')
     try:
         script = f'''
     tell application "Terminal"
         set newTab to do script
         set theWindow to first window of (every window whose tabs contains newTab)
 
-        do script "{command}" in newTab
+        do script "{command} | tee {tmppath}" in newTab
         repeat
             delay 0.05
             if not busy of newTab then exit repeat
@@ -106,9 +108,17 @@ def run_script_in_new_terminal(command):
             if item i of theWindow's tabs is newTab then close theWindow
         end repeat
     end tell'''
-        subprocess.run(['osascript', '-e', script], check=True)
-    except Exception as e:
-        print(f"Error running command in new terminal: {e}")
+        proc = subprocess.Popen(['osascript', '-e', script], text=True)
+        proc.wait()
+    except subprocess.CalledProcessError as e:
+        print(f"Error running script: {e}")
+
+    with open(tmppath, 'r') as f:
+        pipeout = f.read()
+
+    sys.stdout.write(''.join([p if p!= '\n' else '\n\r' for p in pipeout]) + '\n')
+    sys.stdout.flush()
+    
 
 def tokenize_(tokens, currpath, cmdli):
     if tokens.strip() == '::help':
@@ -128,16 +138,24 @@ def tokenize_(tokens, currpath, cmdli):
         sys.stdout.write('\n\r'.join(os.listdir(currpath)) + '\n\n')
         sys.stdout.flush()
         return
+    
     tokenli = tokens.split("::")
     com = ''
     arg = ''
     flag = 1
+
     file_or_dir = tokenli[0].strip()
+    cmdtokenli = tokenli[1].strip().split(">>")
+
+    if cmdtokenli[0].strip() == 'runcmd':
+        run_script_in_new_terminal(f'cd {currpath} && ' + cmdtokenli[1].strip())
+        return
+    
     if file_or_dir == '':
         sys.stdout.write("Missing file or dir name\n")
         sys.stdout.flush()
         return
-    cmdtokenli = tokenli[1].strip().split(">>")
+    
     if len(cmdtokenli) == 1:
         com = cmdtokenli[0].strip()
         flag = 1
@@ -171,8 +189,6 @@ def tokenize_(tokens, currpath, cmdli):
                 subprocess.run(f"{arg} {fullpath}", shell=True, text=True)
             except subprocess.CalledProcessError as e:
                 print("Failed to open file")
-        elif com == 'runcmd':
-            run_script_in_new_terminal(f'cd {currpath} && ' + arg)
         else:
             sys.stdout.write("Command doesn't accept arg\n")
             sys.stdout.flush()
