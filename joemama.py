@@ -92,6 +92,8 @@ def show_cursor():
 
 def run_script_in_new_terminal(command):
     tmppath = os.path.join(os.getcwd(), 'PIPEOUT.txt')
+    f = open(tmppath, 'a')
+    f.close()
     try:
         script = f'''
     tell application "Terminal"
@@ -115,6 +117,8 @@ def run_script_in_new_terminal(command):
 
     with open(tmppath, 'r') as f:
         pipeout = f.read()
+
+    os.remove(tmppath)
 
     sys.stdout.write(''.join([p if p!= '\n' else '\n\r' for p in pipeout]) + '\n')
     sys.stdout.flush()
@@ -148,6 +152,10 @@ def tokenize_(tokens, currpath, cmdli):
     cmdtokenli = tokenli[1].strip().split(">>")
 
     if cmdtokenli[0].strip() == 'runcmd':
+        if len(cmdtokenli) < 2:
+            sys.stdout.write("Missing command arg\n")
+            sys.stdout.flush()
+            return
         run_script_in_new_terminal(f'cd {currpath} && ' + cmdtokenli[1].strip())
         return
     
