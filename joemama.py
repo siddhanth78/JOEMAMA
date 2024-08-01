@@ -5,11 +5,12 @@ import tty
 import subprocess
 import shutil
 from datetime import datetime
-import tempfile
 
-#TODO: error handling in tokenize_
+vars = {'$CURRDIR': os.path.expanduser('~'),
+        }
 
-cmdlist = ['new', 'newdir', 'list', 'copyto', 'moveto', 'meta', 'edit', 'runcmd', 'currpath', 'rename', 'clear', 'remove', 'help']
+cmdlist = ['new', 'newdir', 'list', 'copyto', 'moveto', 'meta', 'editor', 'runcmd',
+           'currdir', 'rename', 'clear', 'remove', 'help', 'variable']
 cmdlist.sort()
 
 def check_dirs(query, paths):
@@ -77,9 +78,9 @@ def getdirs(root):
     return pathlist
 
 def update_path(currpath):
+    global vars
     pathlist = getdirs(currpath)
-    sys.stdout.write(currpath)
-    sys.stdout.flush()
+    vars['$CURRDIR'] = currpath
     return pathlist
 
 def hide_cursor():
@@ -122,17 +123,22 @@ def run_script_in_new_terminal(command):
 
     sys.stdout.write(''.join([p if p!= '\n' else '\n\r' for p in pipeout]) + '\n')
     sys.stdout.flush()
+
+def save_vars(key, val):
+    global vars
+    vars['$'+key] = val
     
 
 def tokenize_(tokens, currpath, cmdli):
+    global vars
     if tokens.strip() == '::help':
         with open('licoms.txt', 'r') as f:
             help = f.read()
         sys.stdout.write(''.join([h if h!= '\n' else '\n\r' for h in help]) + '\n')
         sys.stdout.flush()
         return
-    if tokens.strip() == '::currpath':
-        sys.stdout.write(currpath + '\n')
+    if tokens.strip() == '::currdir':
+        sys.stdout.write(currpath + '/\n')
         sys.stdout.flush()
         return
     if tokens.strip() == '::clear':
@@ -142,6 +148,9 @@ def tokenize_(tokens, currpath, cmdli):
         sys.stdout.write('\n\r'.join(os.listdir(currpath)) + '\n\n')
         sys.stdout.flush()
         return
+    
+    for i, j in vars.items():
+        tokens = tokens.replace(i, j)
     
     tokenli = tokens.split("::")
     com = ''
@@ -157,6 +166,15 @@ def tokenize_(tokens, currpath, cmdli):
             sys.stdout.flush()
             return
         run_script_in_new_terminal(f'cd {currpath} && ' + cmdtokenli[1].strip())
+        return
+    
+    if cmdtokenli[0].strip() == 'variable':
+        print(cmdtokenli)
+        if len(cmdtokenli) < 3:
+            sys.stdout.write("Missing command args\n")
+            sys.stdout.flush()
+            return
+        save_vars(cmdtokenli[1].strip(), cmdtokenli[2].strip())
         return
     
     if file_or_dir == '':
@@ -189,22 +207,31 @@ def tokenize_(tokens, currpath, cmdli):
 
     if flag == 2:
         if com == 'rename' or com == 'moveto':
-            shutil.move(fullpath, arg)
+            try:
+                shutil.move(fullpath, arg)
+            except IOError as err:
+                print(f"Couldn't move file: {err}")
         elif com == 'copyto':
-            shutil.copy2(fullpath, arg)
-        elif com == 'edit':
+            try:
+                shutil.copy2(fullpath, arg)
+            except IOError as err:
+                print(f"Couldn't move file: {err}")
+        elif com == 'editor':
             try:
                 subprocess.run(f"{arg} {fullpath}", shell=True, text=True)
             except subprocess.CalledProcessError as e:
-                print("Failed to open file")
+                print(f"Failed to open file: {e}")
         else:
             sys.stdout.write("Command doesn't accept arg\n")
             sys.stdout.flush()
     
     elif flag == 1:
         if com == 'new':
-            f = open(fullpath, 'x')
-            f.close()
+            try:
+                with open(fullpath, "x") as f:
+                    f.close()
+            except IOError as e:
+                print(f"Couldn't create file: {e}")
         elif com == 'newdir':
             os.mkdir(fullpath)
         elif com == 'list':
@@ -218,10 +245,17 @@ Modified:      {timeConvert(stats.st_mtime)}\r
 Last accessed: {timeConvert(stats.st_atime)}\r\n\n'''
         
         elif com == 'remove':
-            if os.path.isfile(fullpath):
-                os.remove(fullpath)
-            elif os.path.isdir(fullpath):
-                os.rmdir(fullpath)
+            try:
+                if os.path.isfile(fullpath):
+                    os.remove(fullpath)
+                elif os.path.isdir(fullpath):
+                    os.rmdir(fullpath)
+            except IOError as e:
+                print(f"Couldn't remove file or dir: {e}")
+        else:
+            sys.stdout.write("Missing command arg(s)\n")
+            sys.stdout.flush()
+
             
         sys.stdout.write(out)
         sys.stdout.flush()
@@ -243,7 +277,6 @@ def get_input(pathlist, currpath):
     cmd_chars = []
     paths = []
     comli = []
-    subcomli = []
     query = ''
     command = ''
     display = ''
@@ -283,7 +316,7 @@ def get_input(pathlist, currpath):
                         try:
                             subprocess.run(f"open {currpath}", shell=True, text=True)
                         except subprocess.CalledProcessError as e:
-                            print("Failed to open file")
+                            print(f"Failed to open file: {e}")
                         currpath = os.path.dirname(currpath)
 
                 pathlist = update_path(currpath)
