@@ -198,7 +198,7 @@ def save_vars(key, val):
 def tokenize_(tokens, currpath, cmdli):
     global vars
     if tokens.strip() == '::currdir':
-        sys.stdout.write(currpath + '/\n')
+        sys.stdout.write(currpath + '\n')
         sys.stdout.flush()
         return
     if tokens.strip() == '::clear':
