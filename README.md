@@ -1,2 +1,2 @@
-- <ins>J</ins>ust an *O*rdinary and *E*asy-to-use *MA*c OS file *MA*nager
+- <ins>J</ins>ust an <ins>O</ins>rdinary and <ins>E</ins>asy-to-use <ins>MA</ins>c OS file <ins>MA</ins>nager
 - Requires Python 3
