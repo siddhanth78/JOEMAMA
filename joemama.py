@@ -6,6 +6,8 @@ import subprocess
 import shutil
 from datetime import datetime
 
+#TODO: error handling in tokenize_
+
 cmdlist = ['new', 'newdir', 'list', 'copyto', 'moveto', 'meta', 'edit', 'runcmd', 'currpath', 'rename', 'clear', 'remove', 'help']
 cmdlist.sort()
 
@@ -182,14 +184,14 @@ def tokenize_(tokens, currpath, cmdli):
         elif com == 'newdir':
             os.mkdir(fullpath)
         elif com == 'list':
-            out = '\n\r'.join(os.listdir(fullpath))
+            out = '\n\r'.join(os.listdir(fullpath)) + '\n\n'
         elif com == 'meta':
             stats = os.stat(fullpath)
             out = f'''File name:     {file_or_dir}\r
 Size (KB):     {sizeFormat(stats.st_size)}\r
 Created:       {timeConvert(stats.st_ctime)}\r
 Modified:      {timeConvert(stats.st_mtime)}\r
-Last accessed: {timeConvert(stats.st_atime)}\r'''
+Last accessed: {timeConvert(stats.st_atime)}\r\n\n'''
         
         elif com == 'remove':
             if os.path.isfile(fullpath):
@@ -197,7 +199,7 @@ Last accessed: {timeConvert(stats.st_atime)}\r'''
             elif os.path.isdir(fullpath):
                 os.rmdir(fullpath)
             
-        sys.stdout.write(out + '\n\n')
+        sys.stdout.write(out)
         sys.stdout.flush()
 
 def timeConvert(atime):
