@@ -10,8 +10,76 @@ vars = {'$CURRDIR': os.path.expanduser('~'),
         }
 
 cmdlist = ['new', 'newdir', 'list', 'copyto', 'moveto', 'meta', 'editor', 'runcmd',
-           'currdir', 'rename', 'clear', 'remove', 'help', 'variable']
+           'currdir', 'rename', 'clear', 'remove', 'variable']
 cmdlist.sort()
+
+def help_():
+    doc = '''
+Access commands -> `::`\r
+
+Command list:\r
+
+clear\r
+copyto\r
+currdir\r
+editor\r
+list\r
+meta\r
+moveto\r
+new\r
+newdir\r
+remove\r
+rename\r
+runcmd\r
+variable\r
+
+clear - clear screen\r
+Usage: `::clear`\r
+
+copyto - copy file to existing file or directory\r
+Usage: `<filename>::copyto >> <destination>`\r
+
+currdir - display path to current directory\r
+Usage: `::currdir`\r
+
+editor - open file or directory in preferred editor\r
+Usage: `<filename>::editor >> <file editor>`\r
+
+list - list all files and directories in directory\r
+Usage: `<dirname>::list` or `::list`\r
+
+meta - display metadata of file or directory\r
+Usage: `<filename>::meta`\r
+
+moveto - move file to existing directory\r
+Usage: `<filename>::moveto >> <destination>`\r
+
+new - create new file\r
+Usage: `<filename>::new`\r
+
+newdir - create new directory\r
+Usage: `<dirname>::newdir`\r
+
+remove - remove existing file or directory\r
+Usage: `<filename or dirname>::remove`\r
+
+rename - rename existing file or directory\r
+Usage: `<filename or dirname>::rename >> <newfilename or newdirname>`\r
+
+runcmd - run custom bash command in new terminal\r
+Usage: `::runcmd >> <bash command>`\r
+
+variable - create and set variable with custom value\r
+Usage: `::variable >> <varname> >> <value>`\r
+
+To access variables anywhere in the query, use `$<varname>`\r
+Example:\r
+::variable >> newfilename >> new.txt\r
+old.txt::rename >> $newfilename\r
+
+'''
+    sys.stdout.write(doc)
+    sys.stdout.flush()
 
 def check_dirs(query, paths):
     pathli = []
@@ -42,10 +110,9 @@ def display_cmdlist(cm, cmds, display):
     if cmds:
         suggestions_str = ' | '.join(cmds)
         total = f"{display}{cm} [{suggestions_str[:size.columns-cmlen]+'...' if len(suggestions_str) > size.columns-cmlen else suggestions_str}]"
-        sys.stdout.write(total)
     else:
         total = f"{display}{cm}"
-        sys.stdout.write(total)
+    sys.stdout.write(total)
     sys.stdout.flush()
 
 def display_pathlist(query, paths, currpath):
@@ -58,10 +125,9 @@ def display_pathlist(query, paths, currpath):
     if paths:
         suggestions_str = ' | '.join(paths)
         disp = f"{par}/{chi} [{suggestions_str[:size.columns-parchilen]+'...' if len(suggestions_str) > size.columns-parchilen else suggestions_str}]"
-        sys.stdout.write(disp)
     else:
         disp = f"{par}/{chi}"
-        sys.stdout.write(disp)
+    sys.stdout.write(disp)
     sys.stdout.flush()
     return disp
 
@@ -131,12 +197,6 @@ def save_vars(key, val):
 
 def tokenize_(tokens, currpath, cmdli):
     global vars
-    if tokens.strip() == '::help':
-        with open('licoms.txt', 'r') as f:
-            help = f.read()
-        sys.stdout.write(''.join([h if h!= '\n' else '\n\r' for h in help]) + '\n')
-        sys.stdout.flush()
-        return
     if tokens.strip() == '::currdir':
         sys.stdout.write(currpath + '/\n')
         sys.stdout.flush()
@@ -289,9 +349,10 @@ def get_input(pathlist, currpath):
             char = sys.stdin.read(1)
 
             if char == '\n' or char == '\r':
-                os.system("clear")
-                #pathlist, currpath = tokenize_query(tokens, pathlist, currpath)
-                if '::' in query:
+                sys.stdout.write('\n\r')
+                if query == '--help':
+                    help_()
+                elif '::' in query:
                     if comli:
                         tokens = query + ''.join(list(comli[0]))
                     else:
@@ -369,6 +430,8 @@ def get_input(pathlist, currpath):
 
 def main():
     os.system('clear')
+    print("JOEMAMA")
+    print("Use `--help` for more information\n")
     currpath = os.path.expanduser("~")
     pathlist = update_path(currpath)
     paths = check_dirs('', pathlist)
