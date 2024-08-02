@@ -10,8 +10,15 @@ vars = {'$CURRDIR': os.path.expanduser('~'),
         }
 
 cmdlist = ['new', 'newdir', 'list', 'copyto', 'moveto', 'info', 'editor', 'runcmd',
-           'currdir', 'rename', 'clear', 'remove', 'variable']
+           'currdir', 'rename', 'clear', 'remove', 'variable', 'quit']
 cmdlist.sort()
+
+def read_history():
+    history = []
+    if os.path.exists('.history'):
+        with open('.history', 'r') as file:
+            history = file.readlines()
+    return history
 
 def help_():
     doc = '''
@@ -41,6 +48,7 @@ list\r
 moveto\r
 new\r
 newdir\r
+quit\r
 remove\r
 rename\r
 runcmd\r
@@ -72,6 +80,9 @@ Usage: `<filename>::new`\r
 
 newdir - create new directory\r
 Usage: `<dirname>::newdir`\r
+
+quit - quit the terminal\r
+Uasge: `::quit`\r
 
 remove - remove existing file or directory\r
 Usage: `<filename or dirname>::remove`\r
@@ -217,6 +228,8 @@ def save_vars(key, val):
 
 def tokenize_(tokens, currpath, cmdli):
     global vars
+    if tokens.strip() == '::quit':
+        sys.exit(0)
     if tokens.strip() == '::currdir':
         sys.stdout.write(currpath + '\n')
         sys.stdout.flush()
@@ -364,6 +377,8 @@ def get_input(pathlist, currpath):
     command = ''
     display = ''
     tokens = ''
+    history = read_history()
+    history_index = len(history)
     global cmdlist
     try:
         hide_cursor()
@@ -375,6 +390,7 @@ def get_input(pathlist, currpath):
                 sys.stdout.write('\n\r')
                 if query == '--help':
                     help_()
+                    tokens = '--help'
                 elif '::' in query:
                     if comli:
                         tokens = query + ''.join(list(comli[0]))
@@ -383,6 +399,7 @@ def get_input(pathlist, currpath):
                     tokenize_(tokens, currpath, cmdlist)
                 elif query == "..":
                     currpath = os.path.dirname(currpath)
+                    tokens = '..'
                 else:
                     if paths:
                         tokens = ''.join(list(paths[0]))
@@ -403,10 +420,15 @@ def get_input(pathlist, currpath):
                             print(f"Failed to open file: {e}")
                         currpath = os.path.dirname(currpath)
 
+                with open('.history', 'a') as file:
+                    file.write(tokens.strip()+'\n')
+
                 pathlist = update_path(currpath)
                 input_chars = []
                 cmd_chars = []
                 tokens = ''
+                history = read_history()
+                history_index = len(history)
 
             elif char == '\x7f' or char == '\b':
                 if cmd_chars != []:
@@ -427,7 +449,27 @@ def get_input(pathlist, currpath):
                         paths = []
 
             elif char == '\x1b':
-                break
+                next1, next2 = sys.stdin.read(1), sys.stdin.read(1)
+                if next1 == '[':
+                    if next2 == 'A':  # Up arrow
+                        if history_index > 0:
+                            history_index -= 1
+                            query = history[history_index].strip('\n')
+                            input_chars = list(query)
+                            cmd_chars = []
+                    elif next2 == 'B':  # Down arrow
+                        if history_index < len(history) - 1:
+                            history_index += 1
+                            query = history[history_index].strip('\n')
+                            input_chars = list(query)
+                            cmd_chars = []
+                        elif history_index == len(history) - 1:
+                            history_index = len(history)
+                            query = ''
+                            input_chars = []
+                            cmd_chars = []
+                else:
+                    continue
 
             else:
                 if '::' in query:
