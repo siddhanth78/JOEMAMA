@@ -36,8 +36,8 @@ clear\r
 copyto\r
 currdir\r
 editor\r
-list\r
 info\r
+list\r
 moveto\r
 new\r
 newdir\r
@@ -58,11 +58,11 @@ Usage: `::currdir`\r
 editor - open file or directory in preferred editor\r
 Usage: `<filename>::editor >> <file editor>`\r
 
-list - list all files and directories in directory\r
-Usage: `<dirname>::list` or `::list`\r
-
 info - display file or directory information\r
 Usage: `<filename>::info`\r
+
+list - list all files and directories in directory\r
+Usage: `<dirname>::list` or `::list`\r
 
 moveto - move file to existing directory\r
 Usage: `<filename>::moveto >> <destination>`\r
