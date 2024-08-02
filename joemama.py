@@ -321,7 +321,7 @@ def tokenize_(tokens, currpath, cmdli):
             out = '\n\r'.join(os.listdir(fullpath)) + '\n\n'
         elif com == 'info':
             stats = os.stat(fullpath)
-            out = f'''File name:     {file_or_dir}\r
+            out = f'''Name:     {file_or_dir}\r
 Size (KB):     {sizeFormat(stats.st_size)}\r
 Created:       {timeConvert(stats.st_ctime)}\r
 Modified:      {timeConvert(stats.st_mtime)}\r
