@@ -9,7 +9,7 @@ from datetime import datetime
 vars = {'$CURRDIR': os.path.expanduser('~'),
         }
 
-cmdlist = ['new', 'newdir', 'list', 'copyto', 'moveto', 'meta', 'editor', 'runcmd',
+cmdlist = ['new', 'newdir', 'list', 'copyto', 'moveto', 'info', 'editor', 'runcmd',
            'currdir', 'rename', 'clear', 'remove', 'variable']
 cmdlist.sort()
 
@@ -37,7 +37,7 @@ copyto\r
 currdir\r
 editor\r
 list\r
-meta\r
+info\r
 moveto\r
 new\r
 newdir\r
@@ -61,8 +61,8 @@ Usage: `<filename>::editor >> <file editor>`\r
 list - list all files and directories in directory\r
 Usage: `<dirname>::list` or `::list`\r
 
-meta - display metadata of file or directory\r
-Usage: `<filename>::meta`\r
+info - display file or directory information\r
+Usage: `<filename>::info`\r
 
 moveto - move file to existing directory\r
 Usage: `<filename>::moveto >> <destination>`\r
@@ -313,10 +313,13 @@ def tokenize_(tokens, currpath, cmdli):
             except IOError as e:
                 print(f"Couldn't create file: {e}")
         elif com == 'newdir':
-            os.mkdir(fullpath)
+            try:
+                os.mkdir(fullpath)
+            except IOError as e:
+                print(f"Couldn't create directory: {e}")
         elif com == 'list':
             out = '\n\r'.join(os.listdir(fullpath)) + '\n\n'
-        elif com == 'meta':
+        elif com == 'info':
             stats = os.stat(fullpath)
             out = f'''File name:     {file_or_dir}\r
 Size (KB):     {sizeFormat(stats.st_size)}\r
