@@ -15,8 +15,8 @@
 - copyto
 - currdir
 - editor
+- info
 - list
-- meta
 - moveto
 - new
 - newdir
@@ -37,11 +37,11 @@ currdir - display path to current directory
 editor - open file or directory in preferred editor
 - Usage: `<filename>::editor >> <file editor>`
 
+info - display file or directory information
+- Usage: `<filename>::info`
+
 list - list all files and directories in directory
 - Usage: `<dirname>::list` or `::list`
-
-meta - display metadata of file or directory
-- Usage: `<filename>::meta`
 
 moveto - move file to existing directory
 - Usage: `<filename>::moveto >> <destination>`
