@@ -82,13 +82,20 @@ Usage: `<filename or dirname>::rename >> <newfilename or newdirname>`\r
 runcmd - run custom bash command in new terminal\r
 Usage: `::runcmd >> <bash command>`\r
 
+Command runs in current directory by default\r
+To run in a different directory use `cd <dirname> &&` before running the command\r
+Example:\r
+`::runcmd >> cd path/to/preferred/directory && <bash command>`\r
+
 variable - create and set variable with custom value\r
 Usage: `::variable >> <varname> >> <value>`\r
 
 To access variables anywhere in the query, use `$<varname>`\r
 Example:\r
+```\r
 ::variable >> newfilename >> new.txt\r
 old.txt::rename >> $newfilename\r
+```\r
 
 '''
     sys.stdout.write(doc)
