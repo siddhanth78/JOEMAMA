@@ -1,82 +1,77 @@
 - <ins>J</ins>ust an <ins>O</ins>rdinary and <ins>E</ins>asy-to-use <ins>MA</ins>c OS file <ins>MA</ins>nager
 - Requires Python 3
-- Just an Ordinary and Easy-to-use Mac OS file manager\r
+  
+## Just an Ordinary and Easy-to-use Mac OS file manager
+- Navigate files fast using partial searches with no additional text
+- Click `return` to go into a directory, open a file, or use a command
+- Clicking `return` on a pertial search will select the first option in the suggestions
+- Clicking `tab` will autofill the partial search with the first option in the suggestions
+- Enter `..` to go back to the parent directory
 
-Navigate files fast using partial searches with no additional text\r
+- Access commands -> `::`
 
-Click 'return' to go into a directory, open a file, or use a command\r
+## Command list:
+- clear
+- copyto
+- currdir
+- editor
+- list
+- meta
+- moveto
+- new
+- newdir
+- remove
+- rename
+- runcmd
+- variable
 
-Clicking 'return' on a pertial search will select the first option in the suggestions\r
+clear - clear screen
+- Usage: `::clear`
 
-Clicking 'tab' will autofill the partial search with the first option in the suggestions\r
+copyto - copy file to existing file or directory
+- Usage: `<filename>::copyto >> <destination>`
 
-Enter `..` to go back to the parent directory\r
+currdir - display path to current directory
+- Usage: `::currdir`
 
-Access commands -> `::`\r
+editor - open file or directory in preferred editor
+- Usage: `<filename>::editor >> <file editor>`
 
-Command list:\r
+list - list all files and directories in directory
+- Usage: `<dirname>::list` or `::list`
 
-clear\r
-copyto\r
-currdir\r
-editor\r
-list\r
-meta\r
-moveto\r
-new\r
-newdir\r
-remove\r
-rename\r
-runcmd\r
-variable\r
+meta - display metadata of file or directory
+- Usage: `<filename>::meta`
 
-clear - clear screen\r
-Usage: `::clear`\r
+moveto - move file to existing directory
+- Usage: `<filename>::moveto >> <destination>`
 
-copyto - copy file to existing file or directory\r
-Usage: `<filename>::copyto >> <destination>`\r
+new - create new file
+- Usage: `<filename>::new`
 
-currdir - display path to current directory\r
-Usage: `::currdir`\r
+newdir - create new directory
+- Usage: `<dirname>::newdir`
 
-editor - open file or directory in preferred editor\r
-Usage: `<filename>::editor >> <file editor>`\r
+remove - remove existing file or directory
+- Usage: `<filename or dirname>::remove`
 
-list - list all files and directories in directory\r
-Usage: `<dirname>::list` or `::list`\r
+rename - rename existing file or directory
+- Usage: `<filename or dirname>::rename >> <newfilename or newdirname>`
 
-meta - display metadata of file or directory\r
-Usage: `<filename>::meta`\r
+runcmd - run custom bash command in new terminal
+- Usage: `::runcmd >> <bash command>`
 
-moveto - move file to existing directory\r
-Usage: `<filename>::moveto >> <destination>`\r
+Command runs in current directory by default
+To run in a different directory use `cd <dirname> &&` before running the command
+- Example:
+`::runcmd >> cd path/to/preferred/directory && <bash command>`
 
-new - create new file\r
-Usage: `<filename>::new`\r
+variable - create and set variable with custom value
+- Usage: `::variable >> <varname> >> <value>`
 
-newdir - create new directory\r
-Usage: `<dirname>::newdir`\r
-
-remove - remove existing file or directory\r
-Usage: `<filename or dirname>::remove`\r
-
-rename - rename existing file or directory\r
-Usage: `<filename or dirname>::rename >> <newfilename or newdirname>`\r
-
-runcmd - run custom bash command in new terminal\r
-Usage: `::runcmd >> <bash command>`\r
-
-Command runs in current directory by default\r
-To run in a different directory use `cd <dirname> &&` before running the command\r
-Example:\r
-`::runcmd >> cd path/to/preferred/directory && <bash command>`\r
-
-variable - create and set variable with custom value\r
-Usage: `::variable >> <varname> >> <value>`\r
-
-To access variables anywhere in the query, use `$<varname>`\r
-Example:\r
-```\r
-::variable >> newfilename >> new.txt\r
-old.txt::rename >> $newfilename\r
-```\r
+To access variables anywhere in the query, use `$<varname>`
+- Example:
+```
+::variable >> newfilename >> new.txt
+old.txt::rename >> $newfilename
+```
