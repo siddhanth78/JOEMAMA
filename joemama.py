@@ -15,6 +15,17 @@ cmdlist.sort()
 
 def help_():
     doc = '''
+
+Just an Ordinary and Easy-to-use Mac OS file manager\r
+
+Navigate files fast using partial searches with no additional text\r
+
+Click 'return' to go into a directory, open a file, or use a command\r
+
+Clicking 'return' on a pertial search will select the first option in the suggestions\r
+
+Clicking 'tab' will autofill the partial search with the first option in the suggestions\r
+
 Access commands -> `::`\r
 
 Command list:\r
