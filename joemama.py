@@ -26,6 +26,8 @@ Clicking 'return' on a pertial search will select the first option in the sugges
 
 Clicking 'tab' will autofill the partial search with the first option in the suggestions\r
 
+Use `..` to go back to the parent directory\r
+
 Access commands -> `::`\r
 
 Command list:\r
