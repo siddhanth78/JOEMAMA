@@ -76,3 +76,5 @@ To access variables anywhere in the query, use `$<varname>`
 ::variable >> newfilename >> new.txt
 old.txt::rename >> $newfilename
 ```
+
+Variables get cleared after every session
