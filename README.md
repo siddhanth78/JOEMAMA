@@ -7,6 +7,7 @@
 - Clicking `return` on a pertial search will select the first option in the suggestions
 - Clicking `tab` will autofill the partial search with the first option in the suggestions
 - Enter `..` to go back to the parent directory
+- Navigate through previous commands using `up arrow` and `down arrow`
 
 - Access commands -> `::`
 
