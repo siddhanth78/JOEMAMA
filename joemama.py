@@ -110,7 +110,9 @@ Example:\r
 old.txt::rename >> $newfilename\r
 ```\r
 
-Variables get cleared after every session\r
+'CURRDIR' is a default variable with its value being the current directory\r
+It can be accessed anytime with `$CURRDIR`\r
+User defined variables get cleared after every session\r
 
 '''
     sys.stdout.write(doc)
