@@ -77,4 +77,8 @@ To access variables anywhere in the query, use `$<varname>`
 old.txt::rename >> $newfilename
 ```
 
-Variables get cleared after every session
+'CURRDIR' is a default variable with its value being the current directory
+
+It can be accessed anytime with `$CURRDIR`
+
+User defined variables get cleared after every session
