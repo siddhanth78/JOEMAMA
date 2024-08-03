@@ -110,6 +110,8 @@ Example:\r
 old.txt::rename >> $newfilename\r
 ```\r
 
+Variables get cleared after every session\r
+
 '''
     sys.stdout.write(doc)
     sys.stdout.flush()
