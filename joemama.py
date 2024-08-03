@@ -455,19 +455,46 @@ def get_input(pathlist, currpath):
                         if history_index > 0:
                             history_index -= 1
                             query = history[history_index].strip('\n')
+                            command = ''
+                            if '::' in query:
+                                queryli = query.split('::')
+                                query = queryli[0].strip()+ '::'
+                                command = queryli[1].strip()
                             input_chars = list(query)
+                            cmd_chars = list(command)
+                        elif history_index <= 0:
+                            history_index = 0
+                            query = ''
+                            input_chars = []
                             cmd_chars = []
                     elif next2 == 'B':  # Down arrow
                         if history_index < len(history) - 1:
                             history_index += 1
                             query = history[history_index].strip('\n')
+                            command = ''
+                            if '::' in query:
+                                queryli = query.split('::')
+                                query = queryli[0].strip() + '::'
+                                command = queryli[1].strip()
                             input_chars = list(query)
-                            cmd_chars = []
-                        elif history_index == len(history) - 1:
+                            cmd_chars = list(command)
+                        elif history_index >= len(history) - 1:
                             history_index = len(history)
                             query = ''
                             input_chars = []
                             cmd_chars = []
+
+                    # Reset paths and comli after navigating through history
+                    paths = check_dirs(query, pathlist) if '::' not in query else []
+                    comli = check_cmd(command, cmdlist) if '::' in query else []
+                    
+                    # Update display
+                    if '::' in query:
+                        display = display_pathlist(query, paths, currpath)
+                        display_cmdlist(command, comli, display)
+                    else:
+                        display = display_pathlist(query, paths, currpath)
+                    continue
                 else:
                     continue
 
