@@ -77,6 +77,14 @@ To access variables anywhere in the query, use `$<varname>`
 old.txt::rename >> $newfilename
 ```
 
+Click `return` or `space` to autofill and select the first option in the suggestions
+- The variable selected cannot be edited
+
+Click `tab` to only autofill the first option in the suggestions
+- The variable can still be edited when autofilled in this manner
+
+Variables can only be used in command arguments
+
 'CURRDIR' is a default variable with its value being the current directory
 
 It can be accessed anytime with `$CURRDIR`
