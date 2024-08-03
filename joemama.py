@@ -490,11 +490,9 @@ def get_input(pathlist, currpath):
                             input_chars = []
                             cmd_chars = []
 
-                    # Reset paths and comli after navigating through history
                     paths = check_dirs(query, pathlist) if '::' not in query else []
                     comli = check_cmd(command, cmdlist) if '::' in query else []
                     
-                    # Update display
                     if '::' in query:
                         display = display_pathlist(query, paths, currpath)
                         display_cmdlist(command, comli, display)
