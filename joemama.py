@@ -27,13 +27,15 @@ Just an Ordinary and Easy-to-use Mac OS file manager\r
 
 Navigate files fast using partial searches with no additional text\r
 
-Click 'return' to go into a directory, open a file, or use a command\r
+Click `return` to go into a directory, open a file, or use a command\r
 
-Clicking 'return' on a pertial search will select the first option in the suggestions\r
+Clicking `return` on a pertial search will select the first option in the suggestions\r
 
-Clicking 'tab' will autofill the partial search with the first option in the suggestions\r
+Clicking `tab` will autofill the partial search with the first option in the suggestions\r
 
 Enter `..` to go back to the parent directory\r
+
+Navigate through previous commands using `up arrow` and `down arrow`\r
 
 Access commands -> `::`\r
 
