@@ -469,7 +469,7 @@ def get_input(pathlist, currpath):
                             input_chars = list(query)
                             cmd_chars = list(command)
                         elif history_index <= 0:
-                            history_index = 0
+                            history_index = -1
                             query = ''
                             input_chars = []
                             cmd_chars = []
