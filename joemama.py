@@ -385,11 +385,11 @@ def check_vars(va, vlist):
     vli.extend(others)
     return vli
 
-def get_var(currpath, pathlist, input_chars, cmd_chars, tokens, history, history_index, varin = '$'):
+def get_var(currpath, pathlist, input_chars, cmd_chars, tokens, history, history_index, varbuf = [], invarlist = ['$']):
     global vars, cmdlist
     invarli = ['$']
-    varbuffer = []
-    varbuffer.extend(list(varin))
+    varbuffer = [i for i in varbuf if i not in invarlist]
+    varbuffer.extend(invarlist)
     variables = []
     clear_current_line()
     size = os.get_terminal_size()
@@ -443,7 +443,7 @@ def get_var(currpath, pathlist, input_chars, cmd_chars, tokens, history, history
                 varbuffer.pop()
 
         elif char == '$':
-            get_var(currpath, pathlist, input_chars, cmd_chars, tokens+''.join(invarli), history, history_index, '$'+''.join(invarli))
+            get_var(currpath, pathlist, input_chars, cmd_chars, tokens+''.join(invarli), history, history_index, varbuffer, invarli)
 
         else:
             invarli.append(char)
@@ -451,7 +451,7 @@ def get_var(currpath, pathlist, input_chars, cmd_chars, tokens, history, history
 
         invar = ''.join(invarli)
 
-        if varbuffer == [] or '$' not in varbuffer:
+        if '$' not in varbuffer or invarli == []:
             pathlist = update_path(currpath)
             return pathlist, input_chars, cmd_chars, tokens, history, history_index
         
