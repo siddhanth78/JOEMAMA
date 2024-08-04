@@ -110,13 +110,7 @@ Example:\r
 old.txt::rename >> $newfilename\r
 ```\r
 
-Click `return` or `space` to autofill and select the first option in the suggestions\r
-The variable selected cannot be edited\r
-Click `tab` to only autofill the first option in the suggestions\r
-The variable can still be edited when autofilled in this manner\r
-
 Variables can only be used in command arguments\r
-Variables when used as commands can lead to undesirable results\r
 
 'CURRDIR' is a default variable with its value being the current directory\r
 It can be accessed anytime with `$CURRDIR`\r
@@ -242,7 +236,7 @@ def save_vars(key, val):
 
 def tokenize_(tokens, currpath, cmdli):
     global vars
-    if '::$' in tokens.strip():
+    if '::$' in tokens.strip() or tokens[0].strip() == '$':
         sys.stdout.write("Variables can only be used in command arguments\n")
         sys.stdout.flush()
         return
@@ -391,9 +385,11 @@ def check_vars(va, vlist):
     vli.extend(others)
     return vli
 
-def get_var(currpath, tokens):
-    global vars
+def get_var(currpath, pathlist, input_chars, cmd_chars, tokens, history, history_index, varin = '$'):
+    global vars, cmdlist
     invarli = ['$']
+    varbuffer = []
+    varbuffer.extend(list(varin))
     variables = []
     clear_current_line()
     size = os.get_terminal_size()
@@ -407,31 +403,58 @@ def get_var(currpath, tokens):
     disp = f"{par}/{chi}{invar} [{suggestions_str[:size.columns-parchilen]+'...' if len(suggestions_str) > size.columns-parchilen else suggestions_str}]"
     sys.stdout.write(disp)
     sys.stdout.flush()
+
+    pathlist = []
+    
     while True:
         char = sys.stdin.read(1)
 
-        if char == '\n' or char == '\r' or char == ' ':
+        if char == '\n' or char == '\r':
             if variables:
                 invarli = []
                 invarli = list(variables[0])
                 invar = ''.join(invarli)
-            break
+
+            sys.stdout.write('\n\r')
+            tokens = tokens+invar
+
+            tokenize_(tokens, currpath, cmdlist)
+
+            with open('.history', 'a') as file:
+                file.write(tokens.strip()+'\n')
+
+            pathlist = update_path(currpath)
+            paths = check_dirs('', pathlist)
+            display_pathlist('', paths, currpath)
+            
+            get_input(pathlist, currpath)
 
         elif char == '\t':
             if variables:
-                invarli = []
-                invarli.extend(list(variables[0]))
+                varbuffer = [i for i in varbuffer if i not in invarli]
+                invarli = list(variables[0])
+                varbuffer.extend(invarli)
+                variables = []
         
         elif char == '\x7f' or char == '\b':
             if invarli != []:
                 invarli.pop()
+            if varbuffer != []:
+                varbuffer.pop()
+
+        elif char == '$':
+            get_var(currpath, pathlist, input_chars, cmd_chars, tokens+''.join(invarli), history, history_index, '$'+''.join(invarli))
 
         else:
             invarli.append(char)
+            varbuffer.append(char)
 
         invar = ''.join(invarli)
-        if invar.strip() == '':
-            return ''
+
+        if varbuffer == [] or '$' not in varbuffer:
+            pathlist = update_path(currpath)
+            return pathlist, input_chars, cmd_chars, tokens, history, history_index
+        
         variables = check_vars(invar, vars.keys())
         clear_current_line()
         if variables:
@@ -442,8 +465,6 @@ def get_var(currpath, tokens):
         
         sys.stdout.write(disp)
         sys.stdout.flush()
-
-    return invar
     
 
 def get_input(pathlist, currpath):
@@ -457,7 +478,6 @@ def get_input(pathlist, currpath):
     command = ''
     display = ''
     tokens = ''
-    var = ''
     history = read_history()
     history_index = len(history)
     global cmdlist
@@ -469,11 +489,7 @@ def get_input(pathlist, currpath):
 
             if char == '\n' or char == '\r':
                 sys.stdout.write('\n\r')
-                if query.strip()[0] == '$':
-                    sys.stdout.write(f"Variables can only be used in command arguments\n")
-                    sys.stdout.flush()
-                    tokens = query
-                elif query == '--help':
+                if query == '--help':
                     help_()
                     tokens = '--help'
                 elif '::' in query:
@@ -586,14 +602,8 @@ def get_input(pathlist, currpath):
                 sys.stdout.write(char)
                 sys.stdout.flush()
                 tokens = query+command
-                var = get_var(currpath, tokens)
-                if not var:
-                    pass
-                else:
-                    if cmd_chars:
-                        cmd_chars.extend(list(var))
-                    else:
-                        input_chars.extend(list(var))
+                pathlist, input_chars, cmd_chars, tokens, history, history_index = get_var(currpath, pathlist, input_chars,
+                                                                                           cmd_chars,tokens, history, history_index)
 
             else:
                 if '::' in query:
@@ -619,7 +629,7 @@ def get_input(pathlist, currpath):
 
 def main():
     os.system('clear')
-    print("JOEMAMA")
+    print("JOEMAMA 1.3")
     print("Use `--help` for more information\n")
     currpath = os.path.expanduser("~")
     pathlist = update_path(currpath)
