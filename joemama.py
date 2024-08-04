@@ -442,6 +442,54 @@ def get_var(currpath, pathlist, input_chars, cmd_chars, tokens, history, history
             if varbuffer != []:
                 varbuffer.pop()
 
+        elif char == '\x1b':
+            next1, next2 = sys.stdin.read(1), sys.stdin.read(1)
+            if next1 == '[':
+                if next2 == 'A':  # Up arrow
+                    if history_index > 0:
+                        history_index -= 1
+                        query = history[history_index].strip('\n')
+                        command = ''
+                        if '::' in query:
+                            queryli = query.split('::')
+                            query = queryli[0].strip()+ '::'
+                            command = queryli[1].strip()
+                        input_chars = list(query)
+                        cmd_chars = list(command)
+                    elif history_index <= 0:
+                        history_index = -1
+                        query = ''
+                        input_chars = []
+                        cmd_chars = []
+                elif next2 == 'B':  # Down arrow
+                    if history_index < len(history) - 1:
+                        history_index += 1
+                        query = history[history_index].strip('\n')
+                        command = ''
+                        if '::' in query:
+                            queryli = query.split('::')
+                            query = queryli[0].strip() + '::'
+                            command = queryli[1].strip()
+                        input_chars = list(query)
+                        cmd_chars = list(command)
+                    elif history_index >= len(history) - 1:
+                        history_index = len(history)
+                        query = ''
+                        input_chars = []
+                        cmd_chars = []
+
+                pathlist = update_path(currpath)
+                paths = check_dirs(query, pathlist) if '::' not in query else []
+                comli = check_cmd(command, cmdlist) if '::' in query else []
+                
+                if '::' in query:
+                    display = display_pathlist(query, paths, currpath)
+                    display_cmdlist(command, comli, display)
+                else:
+                    display = display_pathlist(query, paths, currpath)
+
+            get_input(pathlist, currpath)
+
         elif char == '$':
             get_var(currpath, pathlist, input_chars, cmd_chars, tokens+''.join(invarli), history, history_index, varbuffer, invarli)
 
