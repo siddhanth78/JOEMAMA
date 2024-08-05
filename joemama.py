@@ -208,7 +208,7 @@ def run_script_in_new_terminal(command):
         set newTab to do script
         set theWindow to first window of (every window whose tabs contains newTab)
 
-        do script "{command} | tee {tmppath}" in newTab
+        do script "{command} |& tee -a {tmppath}" in newTab
         repeat
             delay 0.05
             if not busy of newTab then exit repeat
@@ -228,7 +228,7 @@ def run_script_in_new_terminal(command):
 
     os.remove(tmppath)
 
-    sys.stdout.write(''.join([p if p!= '\n' else '\n\r' for p in pipeout]) + '\n')
+    sys.stdout.write('\n'+''.join([p if p!= '\n' else '\n\r' for p in pipeout]) + '\n')
     sys.stdout.flush()
 
 def save_vars(key, val):
