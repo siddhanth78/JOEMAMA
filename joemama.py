@@ -160,6 +160,8 @@ def display_pathlist(query, paths, currpath):
     query = currpath + '||' + query if query else currpath + '||'
     query_curr = query.split('||')
     par, chi = query_curr[-2], query_curr[-1]
+    parli = par.split('/')
+    par = parli[-2].strip() + '/' + parli[-1].strip()
     parchilen = len(par) + len(chi) + 7
     if paths:
         suggestions_str = ' | '.join(paths)
@@ -403,6 +405,8 @@ def get_var(currpath, pathlist, input_chars, cmd_chars, tokens, history, history
     disp = currpath + '||' + tokens if tokens else currpath + '||'
     disp_curr = disp.split('||')
     par, chi = disp_curr[-2], disp_curr[-1]
+    parli = par.split('/')
+    par = parli[-2].strip() + '/' + parli[-1].strip()
     parchilen = len(par) + len(chi) + 7
     invar = '$'
     variables = check_vars(invar, vars.keys())
