@@ -157,8 +157,8 @@ def display_cmdlist(cm, cmds, display):
 def display_pathlist(query, paths, currpath):
     clear_current_line()
     size = os.get_terminal_size()
-    query = currpath + '/' + query if query else currpath
-    query_curr = query.split('/')
+    query = currpath + '||' + query if query else currpath + '||'
+    query_curr = query.split('||')
     par, chi = query_curr[-2], query_curr[-1]
     parchilen = len(par) + len(chi) + 7
     if paths:
@@ -263,7 +263,13 @@ def tokenize_(tokens, currpath, cmdli):
     flag = 1
 
     file_or_dir = tokenli[0].strip()
-    cmdtokenli = tokenli[1].strip().split(">>")
+
+    try:
+        cmdtokenli = tokenli[1].strip().split(">>")
+    except:
+        sys.stdout.write("Invalid command\n")
+        sys.stdout.flush()
+        return
 
     if cmdtokenli[0].strip() == 'runcmd':
         if len(cmdtokenli) < 2:
@@ -394,8 +400,8 @@ def get_var(currpath, pathlist, input_chars, cmd_chars, tokens, history, history
     variables = []
     clear_current_line()
     size = os.get_terminal_size()
-    disp = currpath + '/' + tokens if tokens else currpath
-    disp_curr = disp.split('/')
+    disp = currpath + '||' + tokens if tokens else currpath + '||'
+    disp_curr = disp.split('||')
     par, chi = disp_curr[-2], disp_curr[-1]
     parchilen = len(par) + len(chi) + 7
     invar = '$'
@@ -498,7 +504,6 @@ def get_var(currpath, pathlist, input_chars, cmd_chars, tokens, history, history
             return pathlist, input_chars, cmd_chars, tokens, history, history_index
 
         elif char == '$':
-            pathlist = update_path(currpath)
             history = read_history()
             history_index = len(history)
             get_var(currpath, pathlist, input_chars, cmd_chars, tokens+''.join(invarli), history, history_index, varbuffer, invarli)
@@ -689,7 +694,7 @@ def get_input(pathlist, currpath):
 
 def main():
     os.system('clear')
-    print("JOEMAMA 1.3")
+    print("JOEMAMA 1.4")
     print("Use `--help` for more information\n")
     currpath = os.path.expanduser("~")
     pathlist = update_path(currpath)
