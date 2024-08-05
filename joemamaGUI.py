@@ -16,7 +16,7 @@ class SimpleFileManagerGUI:
         self.current_path = os.path.expanduser("~")
         self.vars = {'$CURRDIR': self.current_path}
         self.cmdlist = ['new', 'newdir', 'list', 'copyto', 'moveto', 'info', 'editor', 'runcmd',
-                        'currdir', 'rename', 'clear', 'remove', 'variable']
+                        'currdir', 'rename', 'remove', 'variable']
         self.cmdlist.sort()
 
         self.command_history = []  # Initialize the command_history here
@@ -73,9 +73,52 @@ class SimpleFileManagerGUI:
         self.output_text = tk.Text(self.master, height=10, width=70, wrap=tk.WORD)
         self.output_text.pack(padx=10, pady=10, expand=True, fill=tk.BOTH)
 
+        self.output_text.delete('1.0', tk.END)
+        self.output_text.insert(tk.END, 'Enter --help for more information')
+
         # Initialize dropdowns
         self.update_history_dropdown()
         self.update_variable_dropdown()
+
+    def show_help(self):
+        help_text = """
+JOEMAMA 1.4 - Just an Ordinary and Easy-to-use Mac OS file manager
+
+Navigate files fast using partial searches with no additional text
+Click `return` to go into a directory, open a file, or use a command
+Clicking `tab` will autofill the partial search with the first option in the suggestions
+Enter `..` to go back to the parent directory
+Navigate through previous commands using the history dropdown
+
+Commands:
+    <filename>::copyto       Copy file to existing file or directory
+                Usage: <filename>::copyto >> <destination>
+    ::currdir                Display path to current directory
+    <filename>::editor       Open file or directory in preferred editor
+                Usage: <filename>::editor >> <file editor>
+    <filename>::info         Display file or directory information
+    <dirname>::list          List all files and directories in directory
+                Usage: <dirname>::list or ::list for current directory
+    <filename>::moveto       Move file to existing directory
+                Usage: <filename>::moveto >> <destination>
+    <filename>::new          Create new file
+    <dirname>::newdir        Create new directory
+    <filename>::remove       Remove existing file or directory
+    <filename>::rename       Rename existing file or directory
+                Usage: <filename>::rename >> <newfilename>
+    ::runcmd                 Run custom bash command in new terminal
+                Usage: ::runcmd >> <bash command>
+    ::variable               Create and set variable with custom value
+                Usage: ::variable >> <varname> >> <value>
+
+Variables:
+    To access variables anywhere in the query, use $<varname>
+    Use the variable dropdown to autofill existing variables
+    'CURRDIR' is a default variable with its value being the current directory
+    It can be accessed anytime with $CURRDIR
+    """
+        self.output_text.delete('1.0', tk.END)
+        self.output_text.insert(tk.END, help_text)
 
     def on_history_select(self, event):
         selected_command = self.history_var.get()
@@ -137,7 +180,9 @@ class SimpleFileManagerGUI:
     def execute_command(self, event=None):
         query = self.query_var.get()
         self.output_text.delete('1.0', tk.END)
-        if query == '..':
+        if query == '--help':
+            self.show_help()
+        elif query == '..':
             self.go_to_parent_directory()
         elif '::' in query:
             self.handle_command(self.replace_variables(query))
