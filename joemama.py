@@ -386,6 +386,7 @@ def check_vars(va, vlist):
     return vli
 
 def get_var(currpath, pathlist, input_chars, cmd_chars, tokens, history, history_index, varbuf = [], invarlist = ['$']):
+
     global vars, cmdlist
     invarli = ['$']
     varbuffer = [i for i in varbuf if i not in invarlist]
@@ -426,8 +427,11 @@ def get_var(currpath, pathlist, input_chars, cmd_chars, tokens, history, history
             pathlist = update_path(currpath)
             paths = check_dirs('', pathlist)
             display_pathlist('', paths, currpath)
+
+            history = read_history()
+            history_index = len(history)
             
-            get_input(pathlist, currpath)
+            varbuffer = []
 
         elif char == '\t':
             if variables:
@@ -488,9 +492,15 @@ def get_var(currpath, pathlist, input_chars, cmd_chars, tokens, history, history
                 else:
                     display = display_pathlist(query, paths, currpath)
 
-            get_input(pathlist, currpath)
+            pathlist = update_path(currpath)
+            history = read_history()
+            history_index = len(history)
+            return pathlist, input_chars, cmd_chars, tokens, history, history_index
 
         elif char == '$':
+            pathlist = update_path(currpath)
+            history = read_history()
+            history_index = len(history)
             get_var(currpath, pathlist, input_chars, cmd_chars, tokens+''.join(invarli), history, history_index, varbuffer, invarli)
 
         else:
@@ -501,6 +511,8 @@ def get_var(currpath, pathlist, input_chars, cmd_chars, tokens, history, history
 
         if '$' not in varbuffer or invarli == []:
             pathlist = update_path(currpath)
+            history = read_history()
+            history_index = len(history)
             return pathlist, input_chars, cmd_chars, tokens, history, history_index
         
         variables = check_vars(invar, vars.keys())
