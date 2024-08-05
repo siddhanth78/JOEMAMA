@@ -63,6 +63,7 @@ class SimpleFileManagerGUI:
         self.suggestions_listbox = tk.Listbox(self.master, height=5, width=70)
         self.suggestions_listbox.pack(padx=10, pady=(0, 10), fill=tk.X)
         self.suggestions_listbox.bind('<<ListboxSelect>>', self.on_suggestion_select)
+        self.suggestions_listbox.bind('<Double-1>', self.on_suggestion_double_click)
 
         # Current Directory Label
         self.current_dir_var = tk.StringVar(value=f"{self.current_path}")
@@ -161,6 +162,12 @@ Variables:
             selected = self.suggestions_listbox.get(self.suggestions_listbox.curselection())
             self.apply_suggestion(selected)
 
+    def on_suggestion_double_click(self, event):
+        if self.suggestions_listbox.curselection():
+            selected = self.suggestions_listbox.get(self.suggestions_listbox.curselection())
+            self.apply_suggestion(selected)
+            self.execute_command()
+
     def apply_suggestion(self, selected):
         current_query = self.query_var.get()
         if '::' in current_query:
@@ -177,8 +184,9 @@ Variables:
             self.apply_suggestion(first_suggestion)
         return 'break'  # Prevents default Tab behavior
 
-    def execute_command(self, event=None):
-        query = self.query_var.get()
+    def execute_command(self, event=None, query=None):
+        if query is None:
+            query = self.query_var.get()
         self.output_text.delete('1.0', tk.END)
         if query == '--help':
             self.show_help()
@@ -190,9 +198,11 @@ Variables:
             self.navigate_path(self.replace_variables(query))
         self.add_to_history(query)
         self.query_var.set('')
+        query = ''
         self.query_entry.focus_set()  # Set focus back to entry after execution
-        self.get_path_suggestions(query)
-
+        suggestions = self.get_path_suggestions(query)  # Update suggestions after execution
+        for suggestion in suggestions:
+            self.suggestions_listbox.insert(tk.END, suggestion)
 
     def replace_variables(self, query):
         for var, value in self.vars.items():
