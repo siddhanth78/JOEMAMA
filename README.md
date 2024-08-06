@@ -2,7 +2,7 @@
 - Requires Python 3
 
 ## Current versions:
-- Terminal: JOEMAMA 2.1
+- Terminal: JOEMAMA 2.2
 - GUI: JOEMAMA 1.4
   
 ## Just an Ordinary and Easy-to-use Mac OS file manager
@@ -12,7 +12,7 @@
 - Clicking `tab` will autofill the partial search with the first option in the suggestions
 - Enter `..` to go back to the parent directory
 - Navigate through previous commands using `up arrow` and `down arrow`
-- Use `>>> <dirname>` to jump to an existing directory anywhere inside the current directory
+- Use `-> <dirname>` to jump to an existing directory anywhere inside the current directory
 - Variables can be used in place of directory names
 - Commands cannot be used while jumping
 
