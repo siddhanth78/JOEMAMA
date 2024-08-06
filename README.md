@@ -1,5 +1,9 @@
 - <ins>J</ins>ust an <ins>O</ins>rdinary and <ins>E</ins>asy-to-use <ins>MA</ins>c OS file <ins>MA</ins>nager
 - Requires Python 3
+
+## Current versions:
+- Terminal: JOEMAMA 2.1
+- GUI: JOEMAMA 1.4
   
 ## Just an Ordinary and Easy-to-use Mac OS file manager
 - Navigate files fast using partial searches with no additional text
