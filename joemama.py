@@ -37,7 +37,7 @@ Enter `..` to go back to the parent directory\r
 
 Navigate through previous commands using `up arrow` and `down arrow`\r
 
-Use '>>> <dirname>' to jump to an existing directory inside the current directory\r
+Use `>>> <dirname>` to jump to an existing directory anywhere inside the current directory\r
 Commands cannot be used while jumping\r
 
 Access commands -> `::`\r
