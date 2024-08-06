@@ -10,7 +10,7 @@ vars = {'$CURRDIR': os.path.expanduser('~'),
         }
 
 cmdlist = ['new', 'newdir', 'list', 'copyto', 'moveto', 'info', 'editor', 'runcmd',
-           'currdir', 'rename', 'clear', 'remove', 'variable', 'quit']
+           'currdir', 'rename', 'clear', 'remove', 'variable', 'quit', 'varlist']
 cmdlist.sort()
 
 def read_history():
@@ -58,6 +58,7 @@ remove\r
 rename\r
 runcmd\r
 variable\r
+varlist\r
 
 clear - clear screen\r
 Usage: `::clear`\r
@@ -118,6 +119,9 @@ Variables can only be used in command arguments\r
 'CURRDIR' is a default variable with its value being the current directory\r
 It can be accessed anytime with `$CURRDIR`\r
 User defined variables get cleared after every session\r
+
+varlist - list all variables
+Usage: `::varlist`\r
 
 '''
     sys.stdout.write(doc)
@@ -275,6 +279,15 @@ def tokenize_(tokens, currpath, cmdli):
         return
     if tokens.strip() == '::quit':
         sys.exit(0)
+    if tokens.strip() == '::varlist':
+        sys.stdout.write(f"\nUse variable with `$<varname>`\n\n\r")
+        for i, j in vars.items():
+            i = i.strip('$')
+            sys.stdout.write(f"{i} = {j}\n\r")
+            sys.stdout.flush()
+        sys.stdout.write("\n\n")
+        sys.stdout.flush()
+        return
     if tokens.strip() == '::currdir':
         sys.stdout.write(currpath + '\n')
         sys.stdout.flush()
@@ -315,6 +328,10 @@ def tokenize_(tokens, currpath, cmdli):
     if cmdtokenli[0].strip() == 'variable':
         if len(cmdtokenli) < 3:
             sys.stdout.write("Missing command args\n")
+            sys.stdout.flush()
+            return
+        if '$' in cmdtokenli[1].strip():
+            sys.stdout.write("Cannot use '$' in variable name\n")
             sys.stdout.flush()
             return
         save_vars(cmdtokenli[1].strip(), cmdtokenli[2].strip())
