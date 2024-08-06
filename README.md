@@ -13,6 +13,7 @@
 - Enter `..` to go back to the parent directory
 - Navigate through previous commands using `up arrow` and `down arrow`
 - Use `>>> <dirname>` to jump to an existing directory anywhere inside the current directory
+- Variables can be used in place of directory names
 - Commands cannot be used while jumping
 
 - Access commands -> `::`
