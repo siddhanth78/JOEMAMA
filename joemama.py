@@ -37,7 +37,7 @@ Enter `..` to go back to the parent directory\r
 
 Navigate through previous commands using `up arrow` and `down arrow`\r
 
-Use `>>> <dirname>` to jump to an existing directory anywhere inside the current directory\r
+Use `-> <dirname>` to jump to an existing directory anywhere inside the current directory\r
 Variables can be used in place of directory names\r
 Commands cannot be used while jumping\r
 
@@ -510,8 +510,8 @@ def get_input(pathlist, currpath):
                 if query == '--help':
                     help_()
                     tokens = '--help'
-                elif query.strip().startswith('>>>'):
-                    tokens = query.split('>>>')[1]
+                elif query.strip().startswith('->'):
+                    tokens = query.split('->')[1]
                     tokens = tokens.strip()
                     if vli != []:
                         tokens = tokens + ''.join(list(vli[0]))
@@ -536,7 +536,7 @@ def get_input(pathlist, currpath):
                         for m in matchli:
                             sys.stdout.write(f"\n\r{m}\n")
                             sys.stdout.flush()
-                    tokens = '>>>'+tokens
+                    tokens = '->'+tokens
                 elif '::' in query:
                     if vli != []:
                         tokens = query + command + ''.join(list(vli[0]))
@@ -712,7 +712,7 @@ def get_input(pathlist, currpath):
 
 def main():
     os.system('clear')
-    print("JOEMAMA 2.1")
+    print("JOEMAMA 2.2")
     print("Use `--help` for more information\n")
     currpath = os.path.expanduser("~")
     pathlist = update_path(currpath)
