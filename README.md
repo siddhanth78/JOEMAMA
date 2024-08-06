@@ -8,6 +8,8 @@
 - Clicking `tab` will autofill the partial search with the first option in the suggestions
 - Enter `..` to go back to the parent directory
 - Navigate through previous commands using `up arrow` and `down arrow`
+- Use `>>> <dirname>` to jump to an existing directory anywhere inside the current directory
+- Commands cannot be used while jumping
 
 - Access commands -> `::`
 
@@ -25,6 +27,7 @@
 - rename
 - runcmd
 - variable
+- varlist
 
 clear - clear screen
 - Usage: `::clear`
@@ -84,3 +87,6 @@ Variables can only be used in command arguments
 It can be accessed anytime with `$CURRDIR`
 
 User defined variables get cleared after every session
+
+varlist - list all variables
+- Usage: `::varlist`
