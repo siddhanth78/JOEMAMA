@@ -5,12 +5,15 @@ import tty
 import subprocess
 import shutil
 from datetime import datetime
+from distutils.dir_util import copy_tree
 
 vars = {'$CURRDIR': os.path.expanduser('~'),
         }
 
+pli = []
+
 cmdlist = ['new', 'newdir', 'list', 'copyto', 'moveto', 'info', 'editor', 'runcmd',
-           'currdir', 'rename', 'clear', 'remove', 'variable', 'quit', 'varlist']
+           'currdir', 'rename', 'clear', 'remove', 'variable', 'quit', 'varlist', 'purge']
 cmdlist.sort()
 
 def read_history():
@@ -54,6 +57,7 @@ list\r
 moveto\r
 new\r
 newdir\r
+purge\r
 quit\r
 remove\r
 rename\r
@@ -64,7 +68,7 @@ varlist\r
 clear - clear screen\r
 Usage: `::clear`\r
 
-copyto - copy file to existing file or directory\r
+copyto - copy file or contents of directory to existing file or directory\r
 Usage: `<filename>::copyto >> <destination>`\r
 
 currdir - display path to current directory\r
@@ -79,7 +83,7 @@ Usage: `<filename>::info`\r
 list - list all files and directories in directory\r
 Usage: `<dirname>::list` or `::list`\r
 
-moveto - move file to existing directory\r
+moveto - move file or directory to existing directory\r
 Usage: `<filename>::moveto >> <destination>`\r
 
 new - create new file\r
@@ -88,8 +92,11 @@ Usage: `<filename>::new`\r
 newdir - create new directory\r
 Usage: `<dirname>::newdir`\r
 
+purge - remove existing directory and its contents\r
+Usage: `<dirname>::purge`\r
+
 quit - quit the terminal\r
-Uasge: `::quit`\r
+Usage: `::quit`\r
 
 remove - remove existing file or directory\r
 Usage: `<filename or dirname>::remove`\r
@@ -177,8 +184,8 @@ def display_varlist(v_, vli_, display):
 def display_pathlist(query, paths, currpath):
     clear_current_line()
     size = os.get_terminal_size()
-    query = currpath + '||' + query if query else currpath + '||'
-    query_curr = query.split('||')
+    query = currpath + '%||%' + query if query else currpath + '%||%'
+    query_curr = query.split('%||%')
     par, chi = query_curr[-2], query_curr[-1]
     parli = par.split('/')
     par = parli[-2].strip() + '/' + parli[-1].strip()
@@ -273,7 +280,7 @@ def save_vars(key, val):
     
 
 def tokenize_(tokens, currpath, cmdli):
-    global vars
+    global vars, pli
     if '::$' in tokens.strip() or tokens[0].strip() == '$':
         sys.stdout.write("Variables can only be used in command arguments\n")
         sys.stdout.flush()
@@ -366,15 +373,30 @@ def tokenize_(tokens, currpath, cmdli):
         sys.stdout.flush()
         return
 
+    argpath = os.path.join(currpath, arg)
+    if os.path.exists(argpath) == False and com not in ['rename', 'editor'] and flag == 2:
+        sys.stdout.write("Path doesn't exist\n\r")
+        sys.stdout.flush()
+        return
+
     if flag == 2:
         if com == 'rename' or com == 'moveto':
             try:
-                shutil.move(fullpath, arg)
+                dircheck = os.path.isdir(fullpath)
+                shutil.move(fullpath, argpath)
+                if dircheck:
+                    pli = get_all_dirs(os.path.expanduser("~"))
+                    pli.append(os.path.expanduser("~"))
             except IOError as err:
                 print(f"Couldn't move file: {err}")
         elif com == 'copyto':
             try:
-                shutil.copy2(fullpath, arg)
+                if os.path.isfile(fullpath):
+                    shutil.copy2(fullpath, argpath)
+                elif os.path.isdir(fullpath) and os.path.isdir(arg):
+                    copy_tree(fullpath, argpath)
+                    pli = get_all_dirs(os.path.expanduser("~"))
+                    pli.append(os.path.expanduser("~"))
             except IOError as err:
                 print(f"Couldn't move file: {err}")
         elif com == 'editor':
@@ -396,6 +418,8 @@ def tokenize_(tokens, currpath, cmdli):
         elif com == 'newdir':
             try:
                 os.mkdir(fullpath)
+                pli = get_all_dirs(os.path.expanduser("~"))
+                pli.append(os.path.expanduser("~"))
             except IOError as e:
                 print(f"Couldn't create directory: {e}")
         elif com == 'list':
@@ -414,8 +438,17 @@ Last accessed: {timeConvert(stats.st_atime)}\r\n\n'''
                     os.remove(fullpath)
                 elif os.path.isdir(fullpath):
                     os.rmdir(fullpath)
+                    pli = get_all_dirs(os.path.expanduser("~"))
+                    pli.append(os.path.expanduser("~"))
             except IOError as e:
                 print(f"Couldn't remove file or dir: {e}")
+        elif com == 'purge':
+            try:
+                shutil.rmtree(fullpath)
+                pli = get_all_dirs(os.path.expanduser("~"))
+                pli.append(os.path.expanduser("~"))
+            except IOError as e:
+                print(f"Couldn't purge dir: {e}")
         else:
             sys.stdout.write("Missing command arg(s)\n")
             sys.stdout.flush()
@@ -495,12 +528,12 @@ def get_input(pathlist, currpath):
     v = ''
     history = read_history()
     history_index = len(history)
-    global cmdlist, vars
+    global cmdlist, vars, pli
     var_in = False
     varli = []
     vli = []
     try:
-        #hide_cursor()
+        hide_cursor()
         tty.setraw(fd)
         while True:
             char = sys.stdin.read(1)
@@ -517,7 +550,6 @@ def get_input(pathlist, currpath):
                         tokens = tokens + ''.join(list(vli[0]))
                     for i, j in vars.items():
                         tokens = tokens.replace(i, j)
-                    pli = get_all_dirs(currpath)
                     matchli = []
                     for i in pli:
                         if ('Error accessing' in i) or ('Permission denied' in i) or ('No read access' in i):
@@ -528,14 +560,12 @@ def get_input(pathlist, currpath):
                     if len(matchli) == 1:
                         currpath = matchli[0]
                     elif len(matchli) < 1:
-                        sys.stdout.write(f"Either '{tokens}' deosn't exist or access is denied\n")
+                        sys.stdout.write(f"Either '{tokens}' doesn't exist or scan/read permission is denied\n\r")
+                        sys.stdout.write("If directory does exist and is accessible, navigate to it\n")
                         sys.stdout.flush()
                     elif len(matchli) > 1:
-                        sys.stdout.write(f"Multiple matches found. Go to parent directory to ensure proper jump\n")
+                        sys.stdout.write(f"{len(matchli)} matches found. Go to parent directory to ensure proper jump\n")
                         sys.stdout.flush()
-                        for m in matchli:
-                            sys.stdout.write(f"\n\r{m}\n")
-                            sys.stdout.flush()
                     tokens = '->'+tokens
                 elif '::' in query:
                     if vli != []:
@@ -676,8 +706,8 @@ def get_input(pathlist, currpath):
                 v, varli, var_in, query, command, input_chars, cmd_chars = check_var_in(query, command)
 
             if var_in == True:
-                qq = currpath + '||' + query + command if query or command else currpath + '||'
-                qq_curr = qq.split('||')
+                qq = currpath + '%||%' + query + command if query or command else currpath + '%||%'
+                qq_curr = qq.split('%||%')
                 par, chi = qq_curr[-2], qq_curr[-1]
                 parli = par.split('/')
                 par = parli[-2].strip() + '/' + parli[-1].strip()
@@ -711,10 +741,13 @@ def get_input(pathlist, currpath):
         termios.tcsetattr(fd, termios.TCSADRAIN, original_settings)
 
 def main():
+    global pli
     os.system('clear')
-    print("JOEMAMA 2.2")
+    print("JOEMAMA 2.3")
     print("Use `--help` for more information\n")
     currpath = os.path.expanduser("~")
+    pli = get_all_dirs(currpath)
+    pli.append(os.path.expanduser("~"))
     pathlist = update_path(currpath)
     paths = check_dirs('', pathlist)
     display_pathlist('', paths, currpath)
