@@ -2,23 +2,30 @@
 - Requires Python 3
 
 ## Current versions:
-- Terminal: JOEMAMA 2.2
+- Terminal: JOEMAMA 2.3
 - GUI: JOEMAMA 1.4
   
 ## Just an Ordinary and Easy-to-use Mac OS file manager
-- Navigate files fast using partial searches with no additional text
-- Click `return` to go into a directory, open a file, or use a command
-- Clicking `return` on a pertial search will select the first option in the suggestions
-- Clicking `tab` will autofill the partial search with the first option in the suggestions
-- Enter `..` to go back to the parent directory
-- Navigate through previous commands using `up arrow` and `down arrow`
-- Use `-> <dirname>` to jump to an existing directory anywhere inside the current directory
+Navigate files fast using partial searches with no additional text
+
+Click `return` to go into a directory, open a file, or use a command
+
+Clicking `return` on a pertial search will select the first option in the suggestions
+
+Clicking `tab` will autofill the partial search with the first option in the suggestions
+
+Enter `..` to go back to the parent directory
+
+Navigate through previous commands using `up arrow` and `down arrow`
+
+Use `-> <dirname>` to jump to an existing directory anywhere inside the current directory
 - Variables can be used in place of directory names
 - Commands cannot be used while jumping
 
-- Access commands -> `::`
+Access commands -> `::`
 
 ## Command list:
+
 - clear
 - copyto
 - currdir
@@ -28,6 +35,8 @@
 - moveto
 - new
 - newdir
+- purge
+- quit
 - remove
 - rename
 - runcmd
@@ -37,7 +46,7 @@
 clear - clear screen
 - Usage: `::clear`
 
-copyto - copy file to existing file or directory
+copyto - copy file or contents of directory to existing file or directory
 - Usage: `<filename>::copyto >> <destination>`
 
 currdir - display path to current directory
@@ -52,7 +61,7 @@ info - display file or directory information
 list - list all files and directories in directory
 - Usage: `<dirname>::list` or `::list`
 
-moveto - move file to existing directory
+moveto - move file or directory to existing directory
 - Usage: `<filename>::moveto >> <destination>`
 
 new - create new file
@@ -60,6 +69,12 @@ new - create new file
 
 newdir - create new directory
 - Usage: `<dirname>::newdir`
+
+purge - remove existing directory and its contents
+- Usage: `<dirname>::purge`
+
+quit - quit the terminal
+- Usage: `::quit`
 
 remove - remove existing file or directory
 - Usage: `<filename or dirname>::remove`
@@ -88,8 +103,7 @@ old.txt::rename >> $newfilename
 Variables can only be used in command arguments
 
 'CURRDIR' is a default variable with its value being the current directory
-
-It can be accessed anytime with `$CURRDIR`
+- It can be accessed anytime with `$CURRDIR`
 
 User defined variables get cleared after every session
 
