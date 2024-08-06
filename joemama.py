@@ -154,6 +154,18 @@ def display_cmdlist(cm, cmds, display):
     sys.stdout.write(total)
     sys.stdout.flush()
 
+def display_varlist(v_, vli_, display):
+    clear_current_line()
+    size = os.get_terminal_size()
+    vlen = len(v_) + len(display) + 7
+    if vli_:
+        suggestions_str = ' | '.join(vli_)
+        total = f"{display}{v_} [{suggestions_str[:size.columns-vlen]+'...' if len(suggestions_str) > size.columns-vlen else suggestions_str}]"
+    else:
+        total = f"{display}{v_}"
+    sys.stdout.write(total)
+    sys.stdout.flush()
+
 def display_pathlist(query, paths, currpath):
     clear_current_line()
     size = os.get_terminal_size()
@@ -393,147 +405,43 @@ def check_vars(va, vlist):
     vli.extend(others)
     return vli
 
-def get_var(currpath, pathlist, input_chars, cmd_chars, tokens, history, history_index, varbuf = [], invarlist = ['$']):
+def check_var_in(query, command):
+    global vars
+    tokens = query+command
+    ili = list(query)
+    cli = list(command)
+    tokenli = tokens.split(' ')
+    subtoken = ''
 
-    global vars, cmdlist
-    invarli = ['$']
-    varbuffer = [i for i in varbuf if i not in invarlist]
-    varbuffer.extend(invarlist)
-    variables = []
-    clear_current_line()
-    size = os.get_terminal_size()
-    disp = currpath + '||' + tokens if tokens else currpath + '||'
-    disp_curr = disp.split('||')
-    par, chi = disp_curr[-2], disp_curr[-1]
-    parli = par.split('/')
-    par = parli[-2].strip() + '/' + parli[-1].strip()
-    parchilen = len(par) + len(chi) + 7
-    invar = '$'
-    variables = check_vars(invar, vars.keys())
-    suggestions_str = ' | '.join(variables)
-    disp = f"{par}/{chi}{invar} [{suggestions_str[:size.columns-parchilen]+'...' if len(suggestions_str) > size.columns-parchilen else suggestions_str}]"
-    sys.stdout.write(disp)
-    sys.stdout.flush()
+    if '$' in tokenli[-1]:
+        subtoken = tokenli[-1]
 
-    pathlist = []
+    if subtoken == '':
+        return '', [], False, query, command, ili, cli
     
-    while True:
-        char = sys.stdin.read(1)
+    subtokenli = subtoken.split('$')
 
-        if char == '\n' or char == '\r':
-            if variables:
-                invarli = []
-                invarli = list(variables[0])
-                invar = ''.join(invarli)
+    if len(subtokenli) < 2:
+        return '', [], False, query, command, ili, cli
+    
+    varcheck = subtokenli[-1]
 
-            sys.stdout.write('\n\r')
-            tokens = tokens+invar
-
-            tokenize_(tokens, currpath, cmdlist)
-
-            with open('.history', 'a') as file:
-                file.write(tokens.strip()+'\n')
-
-            pathlist = update_path(currpath)
-            paths = check_dirs('', pathlist)
-            display_pathlist('', paths, currpath)
-
-            history = read_history()
-            history_index = len(history)
-            
-            varbuffer = []
-
-        elif char == '\t':
-            if variables:
-                varbuffer = [i for i in varbuffer if i not in invarli]
-                invarli = list(variables[0])
-                varbuffer.extend(invarli)
-                variables = []
-        
-        elif char == '\x7f' or char == '\b':
-            if invarli != []:
-                invarli.pop()
-            if varbuffer != []:
-                varbuffer.pop()
-
-        elif char == '\x1b':
-            next1, next2 = sys.stdin.read(1), sys.stdin.read(1)
-            if next1 == '[':
-                if next2 == 'A':  # Up arrow
-                    if history_index > 0:
-                        history_index -= 1
-                        query = history[history_index].strip('\n')
-                        command = ''
-                        if '::' in query:
-                            queryli = query.split('::')
-                            query = queryli[0].strip()+ '::'
-                            command = queryli[1].strip()
-                        input_chars = list(query)
-                        cmd_chars = list(command)
-                    elif history_index <= 0:
-                        history_index = -1
-                        query = ''
-                        input_chars = []
-                        cmd_chars = []
-                elif next2 == 'B':  # Down arrow
-                    if history_index < len(history) - 1:
-                        history_index += 1
-                        query = history[history_index].strip('\n')
-                        command = ''
-                        if '::' in query:
-                            queryli = query.split('::')
-                            query = queryli[0].strip() + '::'
-                            command = queryli[1].strip()
-                        input_chars = list(query)
-                        cmd_chars = list(command)
-                    elif history_index >= len(history) - 1:
-                        history_index = len(history)
-                        query = ''
-                        input_chars = []
-                        cmd_chars = []
-
-                pathlist = update_path(currpath)
-                paths = check_dirs(query, pathlist) if '::' not in query else []
-                comli = check_cmd(command, cmdlist) if '::' in query else []
-                
-                if '::' in query:
-                    display = display_pathlist(query, paths, currpath)
-                    display_cmdlist(command, comli, display)
-                else:
-                    display = display_pathlist(query, paths, currpath)
-
-            pathlist = update_path(currpath)
-            history = read_history()
-            history_index = len(history)
-            return pathlist, input_chars, cmd_chars, tokens, history, history_index
-
-        elif char == '$':
-            history = read_history()
-            history_index = len(history)
-            get_var(currpath, pathlist, input_chars, cmd_chars, tokens+''.join(invarli), history, history_index, varbuffer, invarli)
-
-        else:
-            invarli.append(char)
-            varbuffer.append(char)
-
-        invar = ''.join(invarli)
-
-        if '$' not in varbuffer or invarli == []:
-            pathlist = update_path(currpath)
-            history = read_history()
-            history_index = len(history)
-            return pathlist, input_chars, cmd_chars, tokens, history, history_index
-        
-        variables = check_vars(invar, vars.keys())
-        clear_current_line()
-        if variables:
-            suggestions_str = ' | '.join(variables)
-            disp = f"{par}/{chi}{invar} [{suggestions_str[:size.columns-parchilen]+'...' if len(suggestions_str) > size.columns-parchilen else suggestions_str}]"
-        else:
-            disp = f"{par}/{chi}{invar}"
-        
-        sys.stdout.write(disp)
-        sys.stdout.flush()
+    for vk in vars.keys():
+        if '$'+varcheck in vk:
+            tokens = tokens[:-len('$'+varcheck)]
+            token_split = tokens.split('::')
+            if len(token_split) < 2:
+                query = token_split[0]
+                command = ''
+                ili = list(query)
+                cli = []
+            elif len(token_split) >= 2:
+                query = token_split[0]+'::'
+                command = token_split[1]
+                ili = list(query)
+                cli = list(command)
+            return '$'+varcheck, list('$'+varcheck), True, query, command, ili, cli
+    return '', [], False, query, command, ili, cli
     
 
 def get_input(pathlist, currpath):
@@ -547,11 +455,15 @@ def get_input(pathlist, currpath):
     command = ''
     display = ''
     tokens = ''
+    v = ''
     history = read_history()
     history_index = len(history)
-    global cmdlist
+    global cmdlist, vars
+    var_in = False
+    varli = []
+    vli = []
     try:
-        hide_cursor()
+        #hide_cursor()
         tty.setraw(fd)
         while True:
             char = sys.stdin.read(1)
@@ -562,7 +474,10 @@ def get_input(pathlist, currpath):
                     help_()
                     tokens = '--help'
                 elif '::' in query:
-                    if comli:
+                    if vli != []:
+                        tokens = query + command + ''.join(list(vli[0]))
+                        vli = []
+                    elif comli:
                         tokens = query + ''.join(list(comli[0]))
                     else:
                         tokens = query + command
@@ -571,6 +486,8 @@ def get_input(pathlist, currpath):
                     currpath = os.path.dirname(currpath)
                     tokens = '..'
                 else:
+                    query = query + ''.join(varli)
+                    paths = check_dirs(query, pathlist)
                     if paths:
                         tokens = ''.join(list(paths[0]))
                     else:
@@ -596,12 +513,15 @@ def get_input(pathlist, currpath):
                 pathlist = update_path(currpath)
                 input_chars = []
                 cmd_chars = []
+                varli = []
                 tokens = ''
                 history = read_history()
                 history_index = len(history)
 
             elif char == '\x7f' or char == '\b':
-                if cmd_chars != []:
+                if varli != []:
+                    varli.pop()
+                elif cmd_chars != []:
                     cmd_chars.pop()
                 elif cmd_chars == [] and input_chars!= []:
                     input_chars.pop()
@@ -609,7 +529,11 @@ def get_input(pathlist, currpath):
                     pass
             
             elif char == '\t':
-                if '::' in query:
+                if var_in == True:
+                    if vli:
+                        varli = list(vli[0])
+                        vli = []
+                elif '::' in query:
                     if comli:
                         cmd_chars = list(comli[0])
                         comli = []
@@ -666,30 +590,75 @@ def get_input(pathlist, currpath):
                 else:
                     continue
 
-            elif char == '$':
-                clear_current_line()
-                sys.stdout.write(char)
-                sys.stdout.flush()
+            elif char == '/':
+                var_in = False
                 tokens = query+command
-                pathlist, input_chars, cmd_chars, tokens, history, history_index = get_var(currpath, pathlist, input_chars,
-                                                                                           cmd_chars,tokens, history, history_index)
+                currpath = os.path.join(currpath, tokens)
+                if os.path.exists(currpath) == False:
+                        sys.stdout.write(f"\n\r'{tokens}' deosn't exist\n")
+                        sys.stdout.flush()
+                        currpath = os.path.dirname(currpath)
+
+                with open('.history', 'a') as file:
+                    file.write(tokens.strip()+'\n')
+
+                pathlist = update_path(currpath)
+                input_chars = []
+                cmd_chars = []
+                varli = []
+                tokens = ''
+                history = read_history()
+                history_index = len(history)
+
+            elif char == '$':
+                varli.append(char)
+                var_in = True
 
             else:
-                if '::' in query:
-                    cmd_chars.append(char)
-                else:
-                    input_chars.append(char)
+                if var_in  == True:
+                    varli.append(char)
+                elif var_in == False:
+                    if '::' in query:
+                        cmd_chars.append(char)
+                    else:
+                        input_chars.append(char)
 
             query = ''.join(input_chars)
             command = ''.join(cmd_chars)
+            v = ''.join(varli)
 
-            if '::' in query:
-                display = display_pathlist(query, paths, currpath)
-                comli = check_cmd(command, cmdlist)
-                display_cmdlist(command, comli, display)
-            else:
-                paths = check_dirs(query, pathlist)
-                display = display_pathlist(query, paths, currpath)
+            if var_in == False:
+                v, varli, var_in, query, command, input_chars, cmd_chars = check_var_in(query, command)
+
+            if var_in == True:
+                qq = currpath + '||' + query + command if query or command else currpath + '||'
+                qq_curr = qq.split('||')
+                par, chi = qq_curr[-2], qq_curr[-1]
+                parli = par.split('/')
+                par = parli[-2].strip() + '/' + parli[-1].strip()
+                display = f'{par}/{chi}'
+                vli = check_vars(v, vars.keys())
+                display_varlist(v, vli, display)
+                if not vli or v.strip() == '':
+                    if '::' in query:
+                        cmd_chars.extend(list(v))
+                    else:
+                        input_chars.extend(list(v))
+                    var_in = False
+                    varli = []
+                    vli = []
+                    v = ''
+                    query = ''.join(input_chars)
+                    command = ''.join(cmd_chars)
+
+            if var_in == False:
+                if '::' in query:
+                    display = display_pathlist(query, paths, currpath)
+                    comli = check_cmd(command, cmdlist)
+                    display_cmdlist(command, comli, display)
+                else:
+                    paths = check_dirs(query, pathlist)
+                    display = display_pathlist(query, paths, currpath)
 
 
     finally:
@@ -698,7 +667,7 @@ def get_input(pathlist, currpath):
 
 def main():
     os.system('clear')
-    print("JOEMAMA 1.4")
+    print("JOEMAMA 1.5")
     print("Use `--help` for more information\n")
     currpath = os.path.expanduser("~")
     pathlist = update_path(currpath)
