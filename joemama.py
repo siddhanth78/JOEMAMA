@@ -121,7 +121,7 @@ Variables can only be used in command arguments\r
 It can be accessed anytime with `$CURRDIR`\r
 User defined variables get cleared after every session\r
 
-varlist - list all variables
+varlist - list all variables\r
 Usage: `::varlist`\r
 
 '''
