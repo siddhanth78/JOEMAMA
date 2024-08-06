@@ -393,7 +393,7 @@ def tokenize_(tokens, currpath, cmdli):
             try:
                 if os.path.isfile(fullpath):
                     shutil.copy2(fullpath, argpath)
-                elif os.path.isdir(fullpath) and os.path.isdir(arg):
+                elif os.path.isdir(fullpath):
                     copy_tree(fullpath, argpath)
                     pli = get_all_dirs(os.path.expanduser("~"))
                     pli.append(os.path.expanduser("~"))
