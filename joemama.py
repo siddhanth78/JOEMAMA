@@ -281,12 +281,12 @@ def tokenize_(tokens, currpath, cmdli):
     if tokens.strip() == '::quit':
         sys.exit(0)
     if tokens.strip() == '::varlist':
-        sys.stdout.write(f"\nUse variable with `$<varname>`\n\n\r")
+        sys.stdout.write(f"Use variable with `$<varname>`\n\n\r")
         for i, j in vars.items():
             i = i.strip('$')
             sys.stdout.write(f"{i} = {j}\n\r")
             sys.stdout.flush()
-        sys.stdout.write("\n\n")
+        sys.stdout.write("\n")
         sys.stdout.flush()
         return
     if tokens.strip() == '::currdir':
@@ -531,7 +531,7 @@ def get_input(pathlist, currpath):
                         sys.stdout.write(f"Either '{tokens}' deosn't exist or access is denied\n")
                         sys.stdout.flush()
                     elif len(matchli) > 1:
-                        sys.stdout.write(f"'Multiple matches found. Go to parent directory to ensure proper jump\n")
+                        sys.stdout.write(f"Multiple matches found. Go to parent directory to ensure proper jump\n")
                         sys.stdout.flush()
                         for m in matchli:
                             sys.stdout.write(f"\n\r{m}\n")
