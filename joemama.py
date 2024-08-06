@@ -37,6 +37,9 @@ Enter `..` to go back to the parent directory\r
 
 Navigate through previous commands using `up arrow` and `down arrow`\r
 
+Use '>>> <dirname>' to jump to an existing directory inside the current directory\r
+Commands cannot be used while jumping\r
+
 Access commands -> `::`\r
 
 Command list:\r
@@ -195,6 +198,22 @@ def getdirs(root):
     except OSError as e:
         sys.stderr.write(f"Error accessing directory: {e}\n")
     return pathlist
+
+def get_all_dirs(root_dir):
+    directories = []
+    if os.access(root_dir, os.R_OK):
+        try:
+            for entry in os.scandir(root_dir):
+                if entry.is_dir(follow_symlinks=False):
+                    directories.append(entry.path)
+                    directories.extend(get_all_dirs(entry.path))  # Recursively add subdirectories
+        except PermissionError:
+            directories.append(f"Permission denied: {root_dir}")
+        except Exception as e:
+            directories.append(f"Error accessing {root_dir}: {e}")
+    else:
+        directories.append(f"No read access: {root_dir}")
+    return directories
 
 def update_path(currpath):
     global vars
@@ -473,6 +492,29 @@ def get_input(pathlist, currpath):
                 if query == '--help':
                     help_()
                     tokens = '--help'
+                elif query.strip().startswith('>>>'):
+                    tokens = query.split('>>>')[1]
+                    tokens = tokens.strip()
+                    pli = get_all_dirs(currpath)
+                    matchli = []
+                    for i in pli:
+                        if ('Error accessing' in i) or ('Permission denied' in i) or ('No read access' in i):
+                            continue
+                        dirname = i.split('/')[-1]
+                        if tokens == dirname:
+                            matchli.append(i)
+                    if len(matchli) == 1:
+                        currpath = matchli[0]
+                    elif len(matchli) < 1:
+                        sys.stdout.write(f"Either '{tokens}' deosn't exist or access is denied\n")
+                        sys.stdout.flush()
+                    elif len(matchli) > 1:
+                        sys.stdout.write(f"'Multiple matches found. Go to parent directory to ensure proper jump\n")
+                        sys.stdout.flush()
+                        for m in matchli:
+                            sys.stdout.write(f"\n\r{m}\n")
+                            sys.stdout.flush()
+                    tokens = '>>>'+tokens
                 elif '::' in query:
                     if vli != []:
                         tokens = query + command + ''.join(list(vli[0]))
@@ -647,7 +689,7 @@ def get_input(pathlist, currpath):
 
 def main():
     os.system('clear')
-    print("JOEMAMA 1.5")
+    print("JOEMAMA 2.1")
     print("Use `--help` for more information\n")
     currpath = os.path.expanduser("~")
     pathlist = update_path(currpath)
