@@ -590,26 +590,6 @@ def get_input(pathlist, currpath):
                 else:
                     continue
 
-            elif char == '/':
-                var_in = False
-                tokens = query+command
-                currpath = os.path.join(currpath, tokens)
-                if os.path.exists(currpath) == False:
-                        sys.stdout.write(f"\n\r'{tokens}' deosn't exist\n")
-                        sys.stdout.flush()
-                        currpath = os.path.dirname(currpath)
-
-                with open('.history', 'a') as file:
-                    file.write(tokens.strip()+'\n')
-
-                pathlist = update_path(currpath)
-                input_chars = []
-                cmd_chars = []
-                varli = []
-                tokens = ''
-                history = read_history()
-                history_index = len(history)
-
             elif char == '$':
                 varli.append(char)
                 var_in = True
