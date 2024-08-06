@@ -38,6 +38,7 @@ Enter `..` to go back to the parent directory\r
 Navigate through previous commands using `up arrow` and `down arrow`\r
 
 Use `>>> <dirname>` to jump to an existing directory anywhere inside the current directory\r
+Variables can be used in place of directory names\r
 Commands cannot be used while jumping\r
 
 Access commands -> `::`\r
@@ -512,6 +513,10 @@ def get_input(pathlist, currpath):
                 elif query.strip().startswith('>>>'):
                     tokens = query.split('>>>')[1]
                     tokens = tokens.strip()
+                    if vli != []:
+                        tokens = tokens + ''.join(list(vli[0]))
+                    for i, j in vars.items():
+                        tokens = tokens.replace(i, j)
                     pli = get_all_dirs(currpath)
                     matchli = []
                     for i in pli:
@@ -573,6 +578,7 @@ def get_input(pathlist, currpath):
                 input_chars = []
                 cmd_chars = []
                 varli = []
+                vli = []
                 tokens = ''
                 history = read_history()
                 history_index = len(history)
