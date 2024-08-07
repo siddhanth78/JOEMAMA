@@ -626,7 +626,7 @@ def get_input(pathlist, currpath):
                         currpath = os.path.dirname(currpath)
 
                     if os.path.exists(currpath) == False:
-                        sys.stdout.write(f"'{tokens}' deosn't exist\n")
+                        sys.stdout.write(f"'{tokens}' doesn't exist\n")
                         sys.stdout.flush()
                         currpath = os.path.dirname(currpath)
 
