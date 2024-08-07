@@ -11,6 +11,7 @@ vars = {'$CURRDIR': os.path.expanduser('~'),
         }
 
 pli = []
+leaves = []
 
 cmdlist = ['new', 'newdir', 'list', 'copyto', 'moveto', 'info', 'editor', 'runcmd',
            'currdir', 'rename', 'clear', 'remove', 'variable', 'quit', 'varlist', 'purge']
@@ -135,6 +136,23 @@ Usage: `::varlist`\r
     sys.stdout.write(doc)
     sys.stdout.flush()
 
+def get_leaf(x):
+    return x.split('/')[-1]
+
+def update_leaves():
+    global pli, leaves
+    dirli = set(list(map(get_leaf, pli)))
+    leaves = list(dirli)
+
+def check_all_dirs(query, paths):
+    pathli = []
+    for p in paths:
+        if p.startswith(query):
+            pathli.append(p)
+    others = [x for x in paths if x not in pathli and query in x]
+    pathli.extend(others)
+    return pathli
+
 def check_dirs(query, paths):
     pathli = []
     for p in paths:
@@ -220,11 +238,11 @@ def get_all_dirs(root_dir):
                     directories.append(entry.path)
                     directories.extend(get_all_dirs(entry.path))  # Recursively add subdirectories
         except PermissionError:
-            directories.append(f"Permission denied: {root_dir}")
+            pass
         except Exception as e:
-            directories.append(f"Error accessing {root_dir}: {e}")
+            pass
     else:
-        directories.append(f"No read access: {root_dir}")
+        pass
     return directories
 
 def update_path(currpath):
@@ -422,6 +440,7 @@ def tokenize_(tokens, currpath, cmdli):
             try:
                 os.mkdir(fullpath)
                 pli.append(fullpath)
+                update_leaves()
             except IOError as e:
                 print(f"Couldn't create directory: {e}")
         elif com == 'list':
@@ -441,6 +460,7 @@ Last accessed: {timeConvert(stats.st_atime)}\r\n\n'''
                 elif os.path.isdir(fullpath):
                     os.rmdir(fullpath)
                     pli.remove(fullpath)
+                    update_leaves()
             except IOError as e:
                 print(f"Couldn't remove file or dir: {e}")
         elif com == 'purge':
@@ -450,6 +470,7 @@ Last accessed: {timeConvert(stats.st_atime)}\r\n\n'''
                 pli.remove(fullpath)
                 for i in lip:
                     pli.remove(i)
+                update_leaves()
             except IOError as e:
                 print(f"Couldn't purge dir: {e}")
         else:
@@ -531,7 +552,7 @@ def get_input(pathlist, currpath):
     v = ''
     history = read_history()
     history_index = len(history)
-    global cmdlist, vars, pli
+    global cmdlist, vars, pli, leaves
     var_in = False
     varli = []
     vli = []
@@ -547,7 +568,10 @@ def get_input(pathlist, currpath):
                     help_()
                     tokens = '--help'
                 elif query.strip().startswith('->'):
-                    tokens = query.split('->')[1]
+                    if paths:
+                        tokens = ''.join(list(paths[0]))
+                    else:
+                        tokens = query.split('->')[1]
                     tokens = tokens.strip()
                     if vli != []:
                         tokens = tokens + ''.join(list(vli[0]))
@@ -555,8 +579,6 @@ def get_input(pathlist, currpath):
                         tokens = tokens.replace(i, j)
                     matchli = []
                     for i in pli:
-                        if ('Error accessing' in i) or ('Permission denied' in i) or ('No read access' in i):
-                            continue
                         dirname = i.split('/')[-1]
                         if tokens == dirname:
                             matchli.append(i)
@@ -637,7 +659,10 @@ def get_input(pathlist, currpath):
                         comli = []
                 else:
                     if paths:
-                        input_chars = list(paths[0])
+                        if query.strip().startswith('->'):
+                            input_chars = list('->'+paths[0])
+                        else:
+                            input_chars = list(paths[0])
                         paths = []
 
             elif char == '\x1b':
@@ -701,6 +726,9 @@ def get_input(pathlist, currpath):
                     else:
                         input_chars.append(char)
 
+            if query.strip().startswith('->'):
+                cmd_chars = []
+
             query = ''.join(input_chars)
             command = ''.join(cmd_chars)
             v = ''.join(varli)
@@ -730,12 +758,18 @@ def get_input(pathlist, currpath):
                     command = ''.join(cmd_chars)
 
             if var_in == False:
-                if '::' in query:
+                if '::' in query and query.strip().startswith('->')==False:
                     display = display_pathlist(query, paths, currpath)
                     comli = check_cmd(command, cmdlist)
                     display_cmdlist(command, comli, display)
                 else:
-                    paths = check_dirs(query, pathlist)
+                    if query.strip().startswith('->'):
+                        if query.strip() == '->':
+                            paths = []
+                        else:
+                            paths = check_all_dirs(query[2:], leaves)
+                    else:
+                        paths = check_dirs(query, pathlist)
                     display = display_pathlist(query, paths, currpath)
 
 
@@ -746,11 +780,12 @@ def get_input(pathlist, currpath):
 def main():
     global pli
     os.system('clear')
-    print("JOEMAMA 2.4")
+    print("JOEMAMA 2.5")
     print("Use `--help` for more information\n")
     currpath = os.path.expanduser("~")
     pli = get_all_dirs(currpath)
     pli.append(os.path.expanduser("~"))
+    update_leaves()
     pathlist = update_path(currpath)
     paths = check_dirs('', pathlist)
     display_pathlist('', paths, currpath)
