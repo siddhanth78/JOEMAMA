@@ -2,7 +2,7 @@
 - Requires Python 3
 
 ## Current versions:
-- Terminal: JOEMAMA 2.3
+- Terminal: JOEMAMA 2.4
 - GUI: JOEMAMA 1.4
   
 ## Just an Ordinary and Easy-to-use Mac OS file manager
