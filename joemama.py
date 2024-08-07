@@ -715,14 +715,26 @@ def get_input(pathlist, currpath):
                             input_chars = []
                             cmd_chars = []
 
-                    paths = check_dirs(query, pathlist) if '::' not in query else []
-                    comli = check_cmd(command, cmdlist) if '::' in query else []
-                    
-                    if '::' in query:
-                        display = display_pathlist(query, paths, currpath)
+                    if '::' in query and query.strip().startswith('->')==False:
+                        if command.strip() == '':
+                            comli = []
+                        else:
+                            comli = check_cmd(command, cmdlist)
+
+                        display = display_pathlist(query, [], currpath)
                         display_cmdlist(command, comli, display)
                     else:
+                        if query.strip() == '':
+                            paths = []
+                        elif query.strip().startswith('->'):
+                            if query.strip() == '->':
+                                paths = []
+                            else:
+                                paths = check_all_dirs(query[2:], leaves)
+                        else:
+                            paths = check_dirs(query, pathlist)
                         display = display_pathlist(query, paths, currpath)
+
                     continue
                 else:
                     continue
@@ -778,7 +790,7 @@ def get_input(pathlist, currpath):
                     else:
                         comli = check_cmd(command, cmdlist)
 
-                    display = display_pathlist(query, paths, currpath)
+                    display = display_pathlist(query, [], currpath)
                     display_cmdlist(command, comli, display)
                 else:
                     if query.strip() == '':
