@@ -143,6 +143,7 @@ def update_leaves():
     global pli, leaves
     dirli = set(list(map(get_leaf, pli)))
     leaves = list(dirli)
+    leaves.sort()
 
 def check_all_dirs(query, paths):
     pathli = []
@@ -150,6 +151,7 @@ def check_all_dirs(query, paths):
         if p.startswith(query):
             pathli.append(p)
     others = [x for x in paths if x not in pathli and query in x]
+    pathli.sort()
     pathli.extend(others)
     return pathli
 
@@ -159,6 +161,7 @@ def check_dirs(query, paths):
         if p.startswith(query):
             pathli.append(p)
     others = [x for x in paths if x not in pathli and query in x]
+    pathli.sort()
     pathli.extend(others)
     return pathli
 
@@ -168,6 +171,7 @@ def check_cmd(command, cmdlist):
         if c.startswith(command):
             cmdli.append(c)
     others = [x for x in cmdlist if x not in cmdli and command in x]
+    cmdli.sort()
     cmdli.extend(others)
     return cmdli
 
@@ -227,6 +231,7 @@ def getdirs(root):
                 pathlist.append(path)
     except OSError as e:
         sys.stderr.write(f"Error accessing directory: {e}\n")
+        pathlist = ["ERROR%"]
     return pathlist
 
 def get_all_dirs(root_dir):
@@ -326,9 +331,6 @@ def tokenize_(tokens, currpath, cmdli):
         sys.stdout.flush()
         return
     
-    for i, j in vars.items():
-        tokens = tokens.replace(i, j)
-    
     tokenli = tokens.split("::")
     com = ''
     arg = ''
@@ -342,14 +344,6 @@ def tokenize_(tokens, currpath, cmdli):
         sys.stdout.write("Invalid command\n")
         sys.stdout.flush()
         return
-
-    if cmdtokenli[0].strip() == 'runcmd':
-        if len(cmdtokenli) < 2:
-            sys.stdout.write("Missing command arg\n")
-            sys.stdout.flush()
-            return
-        run_script_in_new_terminal(f'cd {currpath} && ' + cmdtokenli[1].strip())
-        return
     
     if cmdtokenli[0].strip() == 'variable':
         if len(cmdtokenli) < 3:
@@ -361,6 +355,17 @@ def tokenize_(tokens, currpath, cmdli):
             sys.stdout.flush()
             return
         save_vars(cmdtokenli[1].strip(), cmdtokenli[2].strip())
+        return
+    
+    for i, j in vars.items():
+            cmdtokenli[1] = cmdtokenli[1].replace(i, j)
+
+    if cmdtokenli[0].strip() == 'runcmd':
+        if len(cmdtokenli) < 2:
+            sys.stdout.write("Missing command arg\n")
+            sys.stdout.flush()
+            return
+        run_script_in_new_terminal(f'cd {currpath} && ' + cmdtokenli[1].strip())
         return
     
     if file_or_dir == '':
@@ -496,6 +501,7 @@ def check_vars(va, vlist):
         if v.startswith(va):
             vli.append(v)
     others = [x for x in vlist if x not in vli and va in x]
+    vli.sort()
     vli.extend(others)
     return vli
 
@@ -612,7 +618,12 @@ def get_input(pathlist, currpath):
                     else:
                         tokens = query
 
-                    currpath = os.path.join(currpath, tokens)
+                    try:
+                        currpath = os.path.join(currpath, tokens)
+                    except OSError as e:
+                        sys.stdout.write(f"{e}\n")
+                        sys.stdout.flush()
+                        currpath = os.path.dirname(currpath)
 
                     if os.path.exists(currpath) == False:
                         sys.stdout.write(f"'{tokens}' deosn't exist\n")
@@ -630,6 +641,9 @@ def get_input(pathlist, currpath):
                     file.write(tokens.strip()+'\n')
 
                 pathlist = update_path(currpath)
+                if pathlist == ["ERROR%"]:
+                    currpath = os.path.dirname(currpath)
+                    pathlist = update_path(currpath)
                 input_chars = []
                 cmd_chars = []
                 varli = []
@@ -759,11 +773,17 @@ def get_input(pathlist, currpath):
 
             if var_in == False:
                 if '::' in query and query.strip().startswith('->')==False:
+                    if command.strip() == '':
+                        comli = []
+                    else:
+                        comli = check_cmd(command, cmdlist)
+
                     display = display_pathlist(query, paths, currpath)
-                    comli = check_cmd(command, cmdlist)
                     display_cmdlist(command, comli, display)
                 else:
-                    if query.strip().startswith('->'):
+                    if query.strip() == '':
+                        paths = []
+                    elif query.strip().startswith('->'):
                         if query.strip() == '->':
                             paths = []
                         else:
@@ -787,8 +807,7 @@ def main():
     pli.append(os.path.expanduser("~"))
     update_leaves()
     pathlist = update_path(currpath)
-    paths = check_dirs('', pathlist)
-    display_pathlist('', paths, currpath)
+    display_pathlist('', [], currpath)
     get_input(pathlist, currpath)
 
 if __name__ == '__main__':
