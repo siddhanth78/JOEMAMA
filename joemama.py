@@ -385,8 +385,10 @@ def tokenize_(tokens, currpath, cmdli):
                 dircheck = os.path.isdir(fullpath)
                 shutil.move(fullpath, argpath)
                 if dircheck:
-                    pli = get_all_dirs(os.path.expanduser("~"))
-                    pli.append(os.path.expanduser("~"))
+                    lip = get_all_dirs(argpath)
+                    pli.remove(fullpath)
+                    for i in lip:
+                        pli.append(i)
             except IOError as err:
                 print(f"Couldn't move file: {err}")
         elif com == 'copyto':
@@ -395,8 +397,9 @@ def tokenize_(tokens, currpath, cmdli):
                     shutil.copy2(fullpath, argpath)
                 elif os.path.isdir(fullpath):
                     copy_tree(fullpath, argpath)
-                    pli = get_all_dirs(os.path.expanduser("~"))
-                    pli.append(os.path.expanduser("~"))
+                    lip = get_all_dirs(argpath)
+                    for i in lip:
+                        pli.append(i)
             except IOError as err:
                 print(f"Couldn't move file: {err}")
         elif com == 'editor':
@@ -418,8 +421,7 @@ def tokenize_(tokens, currpath, cmdli):
         elif com == 'newdir':
             try:
                 os.mkdir(fullpath)
-                pli = get_all_dirs(os.path.expanduser("~"))
-                pli.append(os.path.expanduser("~"))
+                pli.append(fullpath)
             except IOError as e:
                 print(f"Couldn't create directory: {e}")
         elif com == 'list':
@@ -438,15 +440,16 @@ Last accessed: {timeConvert(stats.st_atime)}\r\n\n'''
                     os.remove(fullpath)
                 elif os.path.isdir(fullpath):
                     os.rmdir(fullpath)
-                    pli = get_all_dirs(os.path.expanduser("~"))
-                    pli.append(os.path.expanduser("~"))
+                    pli.remove(fullpath)
             except IOError as e:
                 print(f"Couldn't remove file or dir: {e}")
         elif com == 'purge':
             try:
+                lip = get_all_dirs(fullpath)
                 shutil.rmtree(fullpath)
-                pli = get_all_dirs(os.path.expanduser("~"))
-                pli.append(os.path.expanduser("~"))
+                pli.remove(fullpath)
+                for i in lip:
+                    pli.remove(i)
             except IOError as e:
                 print(f"Couldn't purge dir: {e}")
         else:
@@ -743,7 +746,7 @@ def get_input(pathlist, currpath):
 def main():
     global pli
     os.system('clear')
-    print("JOEMAMA 2.3")
+    print("JOEMAMA 2.4")
     print("Use `--help` for more information\n")
     currpath = os.path.expanduser("~")
     pli = get_all_dirs(currpath)
