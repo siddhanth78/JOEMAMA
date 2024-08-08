@@ -68,7 +68,7 @@ varlist\r
 clear - clear screen\r
 Usage: `::clear`\r
 
-copyto - copy file or contents of directory to new file or directory\r
+copyto - copy contents of file or directory to new file or directory\r
 Usage: `<filename>::copyto >> <destination>`\r
 
 currdir - display path to current directory\r
