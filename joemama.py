@@ -183,8 +183,8 @@ def display_cmdlist(cm, cmds, display):
     size = os.get_terminal_size()
     cmlen = len(cm) + len(display) + 7
     if cmds:
-        suggestions_str = ' | '.join(cmds)
-        total = f"{display}{cm} [{suggestions_str[:30]+'...'}]"
+        suggestions_str = ' | '.join(cmds[:10])
+        total = f"{display}{cm} [{suggestions_str}]"
     else:
         total = f"{display}{cm}"
     sys.stdout.write(total)
@@ -195,8 +195,8 @@ def display_varlist(v_, vli_, display):
     size = os.get_terminal_size()
     vlen = len(v_) + len(display) + 7
     if vli_:
-        suggestions_str = ' | '.join(vli_)
-        total = f"{display}{v_} [{suggestions_str[:30]+'...'}]"
+        suggestions_str = ' | '.join(vli_[:10])
+        total = f"{display}{v_} [{suggestions_str}]"
     else:
         total = f"{display}{v_}"
     sys.stdout.write(total)
@@ -212,8 +212,8 @@ def display_pathlist(query, paths, currpath):
     par = parli[-2].strip() + '/' + parli[-1].strip()
     parchilen = len(par) + len(chi) + 7
     if paths:
-        suggestions_str = ' | '.join(paths)
-        disp = f"{par}/{chi} [{suggestions_str[:30]+'...'}]"
+        suggestions_str = ' | '.join(paths[:10])
+        disp = f"{par}/{chi} [{suggestions_str}]"
     else:
         disp = f"{par}/{chi}"
     sys.stdout.write(disp)
@@ -356,8 +356,9 @@ def tokenize_(tokens, currpath, cmdli):
         save_vars(cmdtokenli[1].strip(), cmdtokenli[2].strip())
         return
     
-    for i, j in vars.items():
-            cmdtokenli[1] = cmdtokenli[1].replace(i, j)
+    if len(cmdtokenli) > 1:
+        for i, j in vars.items():
+                cmdtokenli[1] = cmdtokenli[1].replace(i, j)
 
     if cmdtokenli[0].strip() == 'runcmd':
         if len(cmdtokenli) < 2:
