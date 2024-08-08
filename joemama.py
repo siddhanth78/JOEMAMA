@@ -68,7 +68,7 @@ varlist\r
 clear - clear screen\r
 Usage: `::clear`\r
 
-copyto - copy file or contents of directory to existing file or directory\r
+copyto - copy file or contents of directory to new file or directory\r
 Usage: `<filename>::copyto >> <destination>`\r
 
 currdir - display path to current directory\r
@@ -397,7 +397,7 @@ def tokenize_(tokens, currpath, cmdli):
         return
 
     argpath = os.path.join(currpath, arg)
-    if os.path.exists(argpath) == False and com not in ['rename', 'editor'] and flag == 2:
+    if os.path.exists(argpath) == False and com not in ['rename', 'editor', 'copyto'] and flag == 2:
         sys.stdout.write("Path doesn't exist\n\r")
         sys.stdout.flush()
         return
