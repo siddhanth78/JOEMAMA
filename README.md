@@ -46,7 +46,7 @@ Access commands -> `::`
 clear - clear screen
 - Usage: `::clear`
 
-copyto - copy file or contents of directory to existing file or directory
+copyto - copy contents of file or directory to new file or directory
 - Usage: `<filename>::copyto >> <destination>`
 
 currdir - display path to current directory
