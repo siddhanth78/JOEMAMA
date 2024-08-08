@@ -5,7 +5,6 @@ import tty
 import subprocess
 import shutil
 from datetime import datetime
-from distutils.dir_util import copy_tree
 
 vars = {'$CURRDIR': os.path.expanduser('~'),
         }
@@ -176,7 +175,7 @@ def check_cmd(command, cmdlist):
     return cmdli
 
 def clear_current_line():
-    sys.stdout.write('\r\033[K')
+    sys.stdout.write('\0338\033[0J')
     sys.stdout.flush()
 
 def display_cmdlist(cm, cmds, display):
@@ -185,7 +184,7 @@ def display_cmdlist(cm, cmds, display):
     cmlen = len(cm) + len(display) + 7
     if cmds:
         suggestions_str = ' | '.join(cmds)
-        total = f"{display}{cm} [{suggestions_str[:size.columns-cmlen]+'...' if len(suggestions_str) > size.columns-cmlen else suggestions_str}]"
+        total = f"{display}{cm} [{suggestions_str[:30]+'...'}]"
     else:
         total = f"{display}{cm}"
     sys.stdout.write(total)
@@ -197,7 +196,7 @@ def display_varlist(v_, vli_, display):
     vlen = len(v_) + len(display) + 7
     if vli_:
         suggestions_str = ' | '.join(vli_)
-        total = f"{display}{v_} [{suggestions_str[:size.columns-vlen]+'...' if len(suggestions_str) > size.columns-vlen else suggestions_str}]"
+        total = f"{display}{v_} [{suggestions_str[:30]+'...'}]"
     else:
         total = f"{display}{v_}"
     sys.stdout.write(total)
@@ -214,7 +213,7 @@ def display_pathlist(query, paths, currpath):
     parchilen = len(par) + len(chi) + 7
     if paths:
         suggestions_str = ' | '.join(paths)
-        disp = f"{par}/{chi} [{suggestions_str[:size.columns-parchilen]+'...' if len(suggestions_str) > size.columns-parchilen else suggestions_str}]"
+        disp = f"{par}/{chi} [{suggestions_str[:30]+'...'}]"
     else:
         disp = f"{par}/{chi}"
     sys.stdout.write(disp)
@@ -230,7 +229,7 @@ def getdirs(root):
             if os.path.isdir(full_path) or os.path.isfile(full_path):
                 pathlist.append(path)
     except OSError as e:
-        sys.stderr.write(f"Error accessing directory: {e}\n")
+        sys.stderr.write(f"Error accessing directory: {e}\n\r")
         pathlist = ["ERROR%"]
     return pathlist
 
@@ -294,7 +293,7 @@ def run_script_in_new_terminal(command):
 
     os.remove(tmppath)
 
-    sys.stdout.write('\n'+''.join([p if p!= '\n' else '\n\r' for p in pipeout]) + '\n')
+    sys.stdout.write('\n'+''.join([p if p!= '\n' else '\n\r' for p in pipeout]) + '\n\r')
     sys.stdout.flush()
 
 def save_vars(key, val):
@@ -305,7 +304,7 @@ def save_vars(key, val):
 def tokenize_(tokens, currpath, cmdli):
     global vars, pli
     if '::$' in tokens.strip() or tokens[0].strip() == '$':
-        sys.stdout.write("Variables can only be used in command arguments\n")
+        sys.stdout.write("Variables can only be used in command arguments\n\r")
         sys.stdout.flush()
         return
     if tokens.strip() == '::quit':
@@ -320,14 +319,14 @@ def tokenize_(tokens, currpath, cmdli):
         sys.stdout.flush()
         return
     if tokens.strip() == '::currdir':
-        sys.stdout.write(currpath + '\n')
+        sys.stdout.write(currpath + '\n\r')
         sys.stdout.flush()
         return
     if tokens.strip() == '::clear':
         os.system('clear')
         return
     if tokens.strip() == '::list':
-        sys.stdout.write('\n\r'.join(os.listdir(currpath)) + '\n\n')
+        sys.stdout.write('\n\r'.join(os.listdir(currpath)) + '\n\n\r')
         sys.stdout.flush()
         return
     
@@ -341,17 +340,17 @@ def tokenize_(tokens, currpath, cmdli):
     try:
         cmdtokenli = tokenli[1].strip().split(">>")
     except:
-        sys.stdout.write("Invalid command\n")
+        sys.stdout.write("Invalid command\n\r")
         sys.stdout.flush()
         return
     
     if cmdtokenli[0].strip() == 'variable':
         if len(cmdtokenli) < 3:
-            sys.stdout.write("Missing command args\n")
+            sys.stdout.write("Missing command args\n\r")
             sys.stdout.flush()
             return
         if '$' in cmdtokenli[1].strip():
-            sys.stdout.write("Cannot use '$' in variable name\n")
+            sys.stdout.write("Cannot use '$' in variable name\n\r")
             sys.stdout.flush()
             return
         save_vars(cmdtokenli[1].strip(), cmdtokenli[2].strip())
@@ -362,14 +361,14 @@ def tokenize_(tokens, currpath, cmdli):
 
     if cmdtokenli[0].strip() == 'runcmd':
         if len(cmdtokenli) < 2:
-            sys.stdout.write("Missing command arg\n")
+            sys.stdout.write("Missing command arg\n\r")
             sys.stdout.flush()
             return
         run_script_in_new_terminal(f'cd {currpath} && ' + cmdtokenli[1].strip())
         return
     
     if file_or_dir == '':
-        sys.stdout.write("Missing file or dir name\n")
+        sys.stdout.write("Missing file or dir name\n\r")
         sys.stdout.flush()
         return
     
@@ -380,19 +379,19 @@ def tokenize_(tokens, currpath, cmdli):
         com, arg = cmdtokenli[0].strip(), cmdtokenli[1].strip()
         flag = 2
         if arg == '':
-            sys.stdout.write("Missing command arg\n")
+            sys.stdout.write("Missing command arg\n\r")
             sys.stdout.flush()
             return
 
     if com not in cmdli:
-        sys.stdout.write(f"Invalid command: '{com}'\n")
+        sys.stdout.write(f"Invalid command: '{com}'\n\r")
         sys.stdout.flush()
         return
     
     out = ''
     fullpath = os.path.join(currpath, file_or_dir)
     if os.path.exists(fullpath) == False and com not in ['new', 'newdir']:
-        sys.stdout.write("Path doesn't exist\n")
+        sys.stdout.write("Path doesn't exist\n\r")
         sys.stdout.flush()
         return
 
@@ -419,7 +418,7 @@ def tokenize_(tokens, currpath, cmdli):
                 if os.path.isfile(fullpath):
                     shutil.copy2(fullpath, argpath)
                 elif os.path.isdir(fullpath):
-                    copy_tree(fullpath, argpath)
+                    shutil.copytree(fullpath, argpath)
                     lip = get_all_dirs(argpath)
                     for i in lip:
                         pli.append(i)
@@ -431,7 +430,7 @@ def tokenize_(tokens, currpath, cmdli):
             except subprocess.CalledProcessError as e:
                 print(f"Failed to open file: {e}")
         else:
-            sys.stdout.write("Command doesn't accept arg\n")
+            sys.stdout.write("Command doesn't accept arg\n\r")
             sys.stdout.flush()
     
     elif flag == 1:
@@ -449,14 +448,14 @@ def tokenize_(tokens, currpath, cmdli):
             except IOError as e:
                 print(f"Couldn't create directory: {e}")
         elif com == 'list':
-            out = '\n\r'.join(os.listdir(fullpath)) + '\n\n'
+            out = '\n\r'.join(os.listdir(fullpath)) + '\n\n\r'
         elif com == 'info':
             stats = os.stat(fullpath)
             out = f'''Name:     {file_or_dir}\r
 Size (KB):     {sizeFormat(stats.st_size)}\r
 Created:       {timeConvert(stats.st_ctime)}\r
 Modified:      {timeConvert(stats.st_mtime)}\r
-Last accessed: {timeConvert(stats.st_atime)}\r\n\n'''
+Last accessed: {timeConvert(stats.st_atime)}\r\n\n\r'''
         
         elif com == 'remove':
             try:
@@ -479,7 +478,7 @@ Last accessed: {timeConvert(stats.st_atime)}\r\n\n'''
             except IOError as e:
                 print(f"Couldn't purge dir: {e}")
         else:
-            sys.stdout.write("Missing command arg(s)\n")
+            sys.stdout.write("Missing command arg(s)\n\r")
             sys.stdout.flush()
 
             
@@ -592,10 +591,10 @@ def get_input(pathlist, currpath):
                         currpath = matchli[0]
                     elif len(matchli) < 1:
                         sys.stdout.write(f"Either '{tokens}' doesn't exist or scan/read permission is denied\n\r")
-                        sys.stdout.write("If directory does exist and is accessible, navigate to it\n")
+                        sys.stdout.write("If directory does exist and is accessible, navigate to it\n\r")
                         sys.stdout.flush()
                     elif len(matchli) > 1:
-                        sys.stdout.write(f"{len(matchli)} matches found. Go to parent directory to ensure proper jump\n")
+                        sys.stdout.write(f"{len(matchli)} matches found. Go to parent directory to ensure proper jump\n\r")
                         sys.stdout.flush()
                     tokens = '->'+tokens
                 elif '::' in query:
@@ -621,12 +620,12 @@ def get_input(pathlist, currpath):
                     try:
                         currpath = os.path.join(currpath, tokens)
                     except OSError as e:
-                        sys.stdout.write(f"{e}\n")
+                        sys.stdout.write(f"{e}\n\r")
                         sys.stdout.flush()
                         currpath = os.path.dirname(currpath)
 
                     if os.path.exists(currpath) == False:
-                        sys.stdout.write(f"'{tokens}' doesn't exist\n")
+                        sys.stdout.write(f"'{tokens}' doesn't exist\n\r")
                         sys.stdout.flush()
                         currpath = os.path.dirname(currpath)
 
@@ -634,7 +633,8 @@ def get_input(pathlist, currpath):
                         try:
                             subprocess.run(f"open {currpath}", shell=True, text=True)
                         except subprocess.CalledProcessError as e:
-                            print(f"Failed to open file: {e}")
+                            sys.stdout.write(f"Failed to open file: {e}\n\r")
+                            sys.stdout.flush()
                         currpath = os.path.dirname(currpath)
 
                 with open('.history', 'a') as file:
@@ -651,6 +651,16 @@ def get_input(pathlist, currpath):
                 tokens = ''
                 history = read_history()
                 history_index = len(history)
+                query = ''
+                paths = []
+                
+                sys.stdout.write('\r\0337')
+                sys.stdout.flush()
+                display = display_pathlist(query, paths, currpath)
+                sys.stdout.write('\r\0337')
+                sys.stdout.flush()
+
+                continue
 
             elif char == '\x7f' or char == '\b':
                 if varli != []:
@@ -819,7 +829,9 @@ def main():
     pli.append(os.path.expanduser("~"))
     update_leaves()
     pathlist = update_path(currpath)
-    display_pathlist('', [], currpath)
+    sys.stdout.write('\0337')
+    sys.stdout.flush()
+    sys.stdout.write(currpath.strip('/'))
     get_input(pathlist, currpath)
 
 if __name__ == '__main__':
