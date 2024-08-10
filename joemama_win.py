@@ -267,7 +267,7 @@ def run_script_in_new_terminal(command):
     f = open(tmppath, 'a')
     f.close()
     try:
-        script = f'cmd.exe /c "start cmd.exe /k \"{command} | tee -a {tmppath}\""'
+        script = f'cmd.exe /c "start cmd.exe /c \"{command} | tee -a {tmppath}\""'
         proc = subprocess.Popen(script,
                                 text=True,
                                 shell=True)
