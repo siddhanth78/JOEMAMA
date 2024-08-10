@@ -10,7 +10,7 @@ Navigate files fast using partial searches with no additional text
 
 Click `return` to go into a directory, open a file, or use a command
 
-Clicking `return` on a pertial search will select the first option in the suggestions
+Clicking `return` on a partial search will select the first option in the suggestions
 
 Clicking `tab` will autofill the partial search with the first option in the suggestions
 

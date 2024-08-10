@@ -4,7 +4,6 @@ import msvcrt
 import subprocess
 import shutil
 from datetime import datetime
-import keyboard
 
 vars = {'$CURRDIR': os.path.expanduser('~'),
         }
@@ -32,7 +31,7 @@ Navigate files fast using partial searches with no additional text\r
 
 Click `Enter` to go into a directory, open a file, or use a command\r
 
-Clicking `Enter` on a pertial search will select the first option in the suggestions\r
+Clicking `Enter` on a partial search will select the first option in the suggestions\r
 
 Clicking `Tab` will autofill the partial search with the first option in the suggestions\r
 
@@ -268,8 +267,10 @@ def run_script_in_new_terminal(command):
     f = open(tmppath, 'a')
     f.close()
     try:
-        script = f"{command} | tee -a {tmppath}"
-        proc = subprocess.Popen(['cmd.exe','/c', script],shell = True, text=True)
+        script = f'cmd.exe /c "start cmd.exe /k \"{command} | tee -a {tmppath}\""'
+        proc = subprocess.Popen(script,
+                                text=True,
+                                shell=True)
         proc.wait()
     except subprocess.CalledProcessError as e:
         print(f"Error running script: {e}")
@@ -309,7 +310,7 @@ def tokenize_(tokens, currpath, cmdli):
         sys.stdout.flush()
         return
     if tokens.strip() == '::clear':
-        os.system('clear')
+        os.system('cls')
         return
     if tokens.strip() == '::list':
         sys.stdout.write('\n\r'.join(os.listdir(currpath)) + '\n\n\r')
@@ -679,7 +680,7 @@ def get_input(pathlist, currpath):
 
                 elif char == b'\xe0':
                     next1 = msvcrt.getch().decode('utf-8')
-                    if next1 == b'H':  # Up arrow
+                    if next1 == 'H':  # Up arrow
                         if history_index > 0:
                             history_index -= 1
                             query = history[history_index].strip('\n')
@@ -695,7 +696,7 @@ def get_input(pathlist, currpath):
                             query = ''
                             input_chars = []
                             cmd_chars = []
-                    elif next1 == b'P':  # Down arrow
+                    elif next1 == 'P':  # Down arrow
                         if history_index < len(history) - 1:
                             history_index += 1
                             query = history[history_index].strip('\n')
