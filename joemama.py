@@ -6,6 +6,7 @@ import subprocess
 import shutil
 from datetime import datetime
 
+
 vars = {'$CURRDIR': os.path.expanduser('~'),
         }
 
@@ -68,7 +69,7 @@ varlist\r
 clear - clear screen\r
 Usage: `::clear`\r
 
-copyto - copy contents of file or directory to new file or directory\r
+copyto - copy file or contents of directory to new file or directory\r
 Usage: `<filename>::copyto >> <destination>`\r
 
 currdir - display path to current directory\r
@@ -248,6 +249,7 @@ def get_all_dirs(root_dir):
     else:
         pass
     return directories
+  
 
 def update_path(currpath):
     global vars
@@ -610,6 +612,8 @@ def get_input(pathlist, currpath):
                 elif query == "..":
                     currpath = os.path.dirname(currpath)
                     tokens = '..'
+                elif query.strip() == "":
+                    pass
                 else:
                     query = query + ''.join(varli)
                     paths = check_dirs(query, pathlist)
