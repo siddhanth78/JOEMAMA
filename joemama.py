@@ -44,6 +44,14 @@ def read_history():
     if os.path.exists('.history'):
         with open('.history', 'r') as file:
             history = file.readlines()
+    return history[-30:]
+
+def write_history(new_command):
+    history = read_history()
+    history.append(new_command.strip() + '\n')
+    history = history[-30:]
+    with open('.history', 'w') as file:
+        file.writelines(history)
     return history
 
 def help_():
@@ -689,9 +697,7 @@ def get_input(pathlist, currpath):
                         currpath = os.path.dirname(currpath)
 
                 if tokens.strip() != "":
-                    with open('.history', 'a') as file:
-                        file.write(tokens.strip()+'\n')
-                    history = read_history()
+                    history = write_history(tokens)
                     history_index = len(history)
 
                 pathlist = update_path(currpath)
