@@ -687,8 +687,11 @@ def get_input(pathlist, currpath):
                             sys.stdout.flush()
                         currpath = os.path.dirname(currpath)
 
-                with open('.history', 'a') as file:
-                    file.write(tokens.strip()+'\n')
+                if tokens.strip() != "":
+                    with open('.history', 'a') as file:
+                        file.write(tokens.strip()+'\n')
+                    history = read_history()
+                    history_index = len(history)
 
                 pathlist = update_path(currpath)
                 if pathlist == ["ERROR%"]:
@@ -699,8 +702,6 @@ def get_input(pathlist, currpath):
                 varli = []
                 vli = []
                 tokens = ''
-                history = read_history()
-                history_index = len(history)
                 query = ''
                 paths = []
                 
