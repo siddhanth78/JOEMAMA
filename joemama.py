@@ -10,11 +10,33 @@ from datetime import datetime
 vars = {'$CURRDIR': os.path.expanduser('~'),
         }
 
+file_runners = {
+    '.py': 'python3',
+    '.sh': 'bash',
+    '.js': 'node',
+    '.rb': 'ruby',
+    '.pl': 'perl',
+    '.php': 'php',
+    '.java': 'java',
+    '.cpp': 'g++ -o /tmp/tempexe && /tmp/tempexe',
+    '.c': 'gcc -o /tmp/tempexe && /tmp/tempexe',
+    '.go': 'go run',
+    '.R': 'Rscript',
+    '.jl': 'julia',
+    '.scala': 'scala',
+    '.lua': 'lua',
+    '.ts': 'ts-node',
+    '.swift': 'swift',
+    '.m': 'octave',
+    '.f90': 'gfortran -o /tmp/tempexe && /tmp/tempexe',
+    '.hs': 'runhaskell',
+}
+
 pli = []
 leaves = []
 
-cmdlist = ['new', 'newdir', 'list', 'copyto', 'moveto', 'info', 'editor', 'runcmd',
-           'currdir', 'rename', 'clear', 'remove', 'variable', 'quit', 'varlist', 'purge']
+cmdlist = ['new', 'newdir', 'list', 'copyto', 'moveto', 'info', 'editor', 'run',
+           'currdir', 'rename', 'clear', 'remove', 'variable', 'quit', 'varlist', 'purge', 'cmd']
 cmdlist.sort()
 
 def read_history():
@@ -50,6 +72,7 @@ Access commands -> `::`\r
 Command list:\r
 
 clear\r
+cmd\r
 copyto\r
 currdir\r
 editor\r
@@ -62,12 +85,20 @@ purge\r
 quit\r
 remove\r
 rename\r
-runcmd\r
+run\r
 variable\r
 varlist\r
 
 clear - clear screen\r
 Usage: `::clear`\r
+
+cmd - run custom bash command in new terminal\r
+Usage: `::cmd >> <bash command>`\r
+
+Command runs in current directory by default\r
+To run in a different directory use `cd <dirname> &&` before running the command\r
+Example:\r
+`::cmd >> cd path/to/preferred/directory && <bash command>`\r
 
 copyto - copy file or contents of directory to new file or directory\r
 Usage: `<filename>::copyto >> <destination>`\r
@@ -105,13 +136,8 @@ Usage: `<filename or dirname>::remove`\r
 rename - rename existing file or directory\r
 Usage: `<filename or dirname>::rename >> <newfilename or newdirname>`\r
 
-runcmd - run custom bash command in new terminal\r
-Usage: `::runcmd >> <bash command>`\r
-
-Command runs in current directory by default\r
-To run in a different directory use `cd <dirname> &&` before running the command\r
-Example:\r
-`::runcmd >> cd path/to/preferred/directory && <bash command>`\r
+run - run a script\r
+Usage: `<filename>::run`\r
 
 variable - create and set variable with custom value\r
 Usage: `::variable >> <varname> >> <value>`\r
@@ -181,8 +207,6 @@ def clear_current_line():
 
 def display_cmdlist(cm, cmds, display):
     clear_current_line()
-    size = os.get_terminal_size()
-    cmlen = len(cm) + len(display) + 7
     if cmds:
         suggestions_str = ' | '.join(cmds[:10])
         total = f"{display}{cm} [{suggestions_str}]"
@@ -193,8 +217,6 @@ def display_cmdlist(cm, cmds, display):
 
 def display_varlist(v_, vli_, display):
     clear_current_line()
-    size = os.get_terminal_size()
-    vlen = len(v_) + len(display) + 7
     if vli_:
         suggestions_str = ' | '.join(vli_[:10])
         total = f"{display}{v_} [{suggestions_str}]"
@@ -205,13 +227,11 @@ def display_varlist(v_, vli_, display):
 
 def display_pathlist(query, paths, currpath):
     clear_current_line()
-    size = os.get_terminal_size()
     query = currpath + '%||%' + query if query else currpath + '%||%'
     query_curr = query.split('%||%')
     par, chi = query_curr[-2], query_curr[-1]
     parli = par.split('/')
     par = parli[-2].strip() + '/' + parli[-1].strip()
-    parchilen = len(par) + len(chi) + 7
     if paths:
         suggestions_str = ' | '.join(paths[:10])
         disp = f"{par}/{chi} [{suggestions_str}]"
@@ -304,7 +324,7 @@ def save_vars(key, val):
     
 
 def tokenize_(tokens, currpath, cmdli):
-    global vars, pli
+    global vars, pli, file_runners
     if '::$' in tokens.strip() or tokens[0].strip() == '$':
         sys.stdout.write("Variables can only be used in command arguments\n\r")
         sys.stdout.flush()
@@ -362,7 +382,7 @@ def tokenize_(tokens, currpath, cmdli):
         for i, j in vars.items():
                 cmdtokenli[1] = cmdtokenli[1].replace(i, j)
 
-    if cmdtokenli[0].strip() == 'runcmd':
+    if cmdtokenli[0].strip() == 'cmd':
         if len(cmdtokenli) < 2:
             sys.stdout.write("Missing command arg\n\r")
             sys.stdout.flush()
@@ -480,6 +500,31 @@ Last accessed: {timeConvert(stats.st_atime)}\r\n\n\r'''
                 update_leaves()
             except IOError as e:
                 print(f"Couldn't purge dir: {e}")
+        elif com == 'run':
+            try:
+                if not os.path.exists(fullpath):
+                    sys.stdout.write(f"File '{file_or_dir}' does not exist.\n\r")
+                    sys.stdout.flush()
+                    return
+                if os.path.isdir(fullpath):
+                    sys.stdout.write(f"'{file_or_dir}' is a directory. Cannot run.\n\r")
+                    sys.stdout.flush()
+                    return
+                
+                file_extension = os.path.splitext(fullpath)[1]
+                if file_extension in file_runners:
+                    runner = file_runners[file_extension]
+                    if file_extension in ['.cpp', '.c', '.f90']:
+                        command = f'{runner} {fullpath}'
+                    else:
+                        command = f'{runner} {fullpath}'
+                    run_script_in_new_terminal(command)
+                else:
+                    sys.stdout.write(f"Unsupported file type. Supported extensions are: {', '.join(file_runners.keys())}\n\r")
+                    sys.stdout.flush()
+                    return
+            except subprocess.CalledProcessError as e:
+                print(f"Failed to run file: {e}")
         else:
             sys.stdout.write("Missing command arg(s)\n\r")
             sys.stdout.flush()
@@ -827,7 +872,7 @@ def get_input(pathlist, currpath):
 def main():
     global pli
     os.system('clear')
-    print("JOEMAMA 2.5")
+    print("JOEMAMA 2.6")
     print("Use `--help` for more information\n")
     currpath = os.path.expanduser("~")
     pli = get_all_dirs(currpath)
