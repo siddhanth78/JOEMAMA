@@ -642,6 +642,7 @@ def get_input(pathlist, currpath):
                         sys.stdout.write("If directory does exist and is accessible, navigate to it\n\r")
                         sys.stdout.flush()
                     elif len(matchli) > 1:
+                        sys.stdout.write("\n\r" + "\n\n\r".join(matchli)+"\n\n\r")
                         sys.stdout.write(f"{len(matchli)} matches found. Go to parent directory to ensure proper jump\n\r")
                         sys.stdout.flush()
                     tokens = '->'+tokens
