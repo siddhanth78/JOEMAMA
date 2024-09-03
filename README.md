@@ -2,7 +2,7 @@
 - Requires Python 3
 
 ## Current versions:
-- Terminal: JOEMAMA 2.5
+- Terminal: JOEMAMA 2.6
 - GUI: JOEMAMA 1.4
   
 ## Just an Ordinary and Easy-to-use Mac OS file manager
@@ -27,6 +27,7 @@ Access commands -> `::`
 ## Command list:
 
 - clear
+- cmd
 - copyto
 - currdir
 - editor
@@ -39,12 +40,20 @@ Access commands -> `::`
 - quit
 - remove
 - rename
-- runcmd
+- run
 - variable
 - varlist
 
 clear - clear screen
 - Usage: `::clear`
+
+cmd - run custom bash command in new terminal
+- Usage: `::cmd >> <bash command>`
+
+Command runs in current directory by default
+To run in a different directory use `cd <dirname> &&` before running the command
+- Example:
+`::cmd >> cd path/to/preferred/directory && <bash command>`
 
 copyto - copy contents of file or directory to new file or directory
 - Usage: `<filename>::copyto >> <destination>`
@@ -82,13 +91,8 @@ remove - remove existing file or directory
 rename - rename existing file or directory
 - Usage: `<filename or dirname>::rename >> <newfilename or newdirname>`
 
-runcmd - run custom bash command in new terminal
-- Usage: `::runcmd >> <bash command>`
-
-Command runs in current directory by default
-To run in a different directory use `cd <dirname> &&` before running the command
-- Example:
-`::runcmd >> cd path/to/preferred/directory && <bash command>`
+run - run a script
+- Usage: `<filename>::run`
 
 variable - create and set variable with custom value
 - Usage: `::variable >> <varname> >> <value>`
